@@ -6,11 +6,15 @@ import 'package:intl/intl.dart';
 
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/models/member.dart';
 import '../../../shared/models/stokvel.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/stokvel_type_chip.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/groups_provider.dart';
+import '../services/invite_service.dart';
 
 class GroupDetailScreen extends ConsumerStatefulWidget {
   final String groupId;
@@ -38,97 +42,111 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final groups = ref.watch(groupsListProvider);
-    final group = groups.firstWhere(
-      (g) => g.id == widget.groupId,
-      orElse: () => groups.first,
-    );
+    final groupAsync = ref.watch(stokvelDetailProvider(widget.groupId));
     final currencyFormat =
         NumberFormat.currency(locale: 'en_ZA', symbol: 'R', decimalDigits: 0);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(group.name),
-        leading: BackButton(onPressed: () => context.pop()),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {},
-          ),
-        ],
+    return groupAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: LoadingIndicator()),
       ),
-      body: Column(
-        children: [
-          // Header card
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: AppCard(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      error: (error, _) => Scaffold(
+        appBar: AppBar(),
+        body: Center(child: Text('Error: $error')),
+      ),
+      data: (group) {
+        if (group == null) {
+          return Scaffold(
+            appBar: AppBar(),
+            body: const Center(child: Text('Group not found')),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(group.name),
+            leading: BackButton(onPressed: () => context.pop()),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () {},
+              ),
+            ],
+          ),
+          body: Column(
+            children: [
+              // Header card
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: AppCard(
+                  child: Column(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Balance',
-                            style: Theme.of(context).textTheme.bodySmall,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Balance',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              Text(
+                                currencyFormat.format(group.totalCollected),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            ],
                           ),
+                          StokvelTypeChip(type: group.type),
+                        ],
+                      ),
+                      const Gap(8),
+                      Row(
+                        children: [
+                          const Icon(Icons.people_outline, size: 16),
+                          const Gap(4),
+                          Text('${group.memberCount} members'),
+                          const Gap(16),
                           Text(
-                            currencyFormat.format(group.totalCollected),
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
+                            '${currencyFormat.format(group.contributionAmount)}/month',
                           ),
                         ],
                       ),
-                      StokvelTypeChip(type: group.type),
                     ],
                   ),
-                  const Gap(8),
-                  Row(
-                    children: [
-                      const Icon(Icons.people_outline, size: 16),
-                      const Gap(4),
-                      Text('${group.memberCount} members'),
-                      const Gap(16),
-                      Text(
-                        '${currencyFormat.format(group.contributionAmount)}/month',
-                      ),
-                    ],
-                  ),
+                ),
+              ),
+
+              // Tabs
+              TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Overview'),
+                  Tab(text: 'Members'),
+                  Tab(text: 'Contributions'),
+                  Tab(text: 'Payouts'),
                 ],
               ),
-            ),
-          ),
 
-          // Tabs
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Overview'),
-              Tab(text: 'Members'),
-              Tab(text: 'Contributions'),
-              Tab(text: 'Payouts'),
+              // Tab content
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _OverviewTab(group: group),
+                    _MembersTab(groupId: widget.groupId),
+                    _ContributionsTab(groupId: widget.groupId),
+                    _PayoutsTab(groupId: widget.groupId),
+                  ],
+                ),
+              ),
             ],
           ),
-
-          // Tab content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _OverviewTab(group: group),
-                _MembersTab(groupId: widget.groupId),
-                _ContributionsTab(groupId: widget.groupId),
-                _PayoutsTab(groupId: widget.groupId),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -252,54 +270,93 @@ class _StatRow extends StatelessWidget {
   }
 }
 
-class _MembersTab extends StatelessWidget {
+class _MembersTab extends ConsumerWidget {
   final String groupId;
   const _MembersTab({required this.groupId});
 
-  @override
-  Widget build(BuildContext context) {
-    // Mock member data
-    final members = [
-      ('Nomsa M.', 'Chairperson', Icons.star),
-      ('Sipho S.', 'Treasurer', Icons.account_balance),
-      ('Thabo M.', 'Member #3', Icons.person),
-      ('Lerato K.', 'Member #4', Icons.person),
-      ('Bongani D.', 'Member #5', Icons.person),
-    ];
+  IconData _roleIcon(MemberRole role) {
+    switch (role) {
+      case MemberRole.chairperson:
+        return Icons.star;
+      case MemberRole.treasurer:
+        return Icons.account_balance;
+      case MemberRole.secretary:
+        return Icons.edit_note;
+      case MemberRole.member:
+        return Icons.person;
+    }
+  }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        ...members.map((m) => AppCard(
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                    child: Icon(m.$3, color: AppColors.primary, size: 20),
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membersAsync = ref.watch(stokvelMembersProvider(groupId));
+
+    return membersAsync.when(
+      loading: () => const Center(child: LoadingIndicator()),
+      error: (error, _) => Center(child: Text('Error: $error')),
+      data: (members) {
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            ...members.map((m) => AppCard(
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: 0.1),
+                        child: Icon(_roleIcon(m.role),
+                            color: AppColors.primary, size: 20),
+                      ),
+                      const Gap(12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(m.displayName,
+                                style:
+                                    Theme.of(context).textTheme.titleSmall),
+                            Text(
+                              m.role.displayName +
+                                  (m.rotationOrder != null
+                                      ? ' #${m.rotationOrder}'
+                                      : ''),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const Gap(12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(m.$1,
-                            style: Theme.of(context).textTheme.titleSmall),
-                        Text(m.$2,
-                            style: Theme.of(context).textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            )),
-        const Gap(16),
-        AppButton(
-          label: 'Invite Member',
-          variant: AppButtonVariant.outline,
-          onPressed: () {},
-          icon: Icons.person_add_outlined,
-        ),
-      ],
+                )),
+            const Gap(16),
+            AppButton(
+              label: 'Invite Member',
+              variant: AppButtonVariant.outline,
+              onPressed: () async {
+                final authState = ref.read(authStateProvider);
+                if (authState.user == null) return;
+                final code = await InviteService().createInvite(
+                  stokvelId: groupId,
+                  createdBy: authState.user!.uid,
+                );
+                final group =
+                    ref.read(stokvelDetailProvider(groupId)).valueOrNull;
+                if (context.mounted) {
+                  context.pushNamed(
+                    RouteNames.invite,
+                    pathParameters: {'stokvelId': groupId},
+                    queryParameters: {
+                      'name': group?.name ?? '',
+                      'code': code,
+                    },
+                  );
+                }
+              },
+              icon: Icons.person_add_outlined,
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -333,7 +390,8 @@ class _ContributionsTab extends StatelessWidget {
         AppCard(
           child: Row(
             children: [
-              const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+              const Icon(Icons.check_circle,
+                  color: AppColors.success, size: 20),
               const Gap(8),
               const Text('All 5 paid'),
               const Spacer(),

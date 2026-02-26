@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,18 +8,18 @@ import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../providers/auth_provider.dart';
 
-class PhoneAuthScreen extends StatefulWidget {
+class PhoneAuthScreen extends ConsumerStatefulWidget {
   const PhoneAuthScreen({super.key});
 
   @override
-  State<PhoneAuthScreen> createState() => _PhoneAuthScreenState();
+  ConsumerState<PhoneAuthScreen> createState() => _PhoneAuthScreenState();
 }
 
-class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
+class _PhoneAuthScreenState extends ConsumerState<PhoneAuthScreen> {
   final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -39,18 +40,31 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
 
   void _continue() {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-    // TODO: Implement Firebase phone auth
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        context.goNamed(RouteNames.otp);
-      }
-    });
+    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    final phoneNumber = '+27$digits';
+    ref.read(authStateProvider.notifier).verifyPhoneNumber(phoneNumber);
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+
+    ref.listen<AuthState>(authStateProvider, (prev, next) {
+      if (next.status == AuthStatus.codeSent) {
+        context.goNamed(RouteNames.otp);
+      }
+      if (next.status == AuthStatus.error && next.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    });
+
+    final isLoading = authState.status == AuthStatus.loading;
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.pop()),
@@ -123,8 +137,8 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                 const Gap(32),
                 AppButton(
                   label: 'Continue',
-                  onPressed: _continue,
-                  isLoading: _isLoading,
+                  onPressed: isLoading ? null : _continue,
+                  isLoading: isLoading,
                 ),
                 const Spacer(),
                 Center(

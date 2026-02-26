@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../groups/providers/groups_provider.dart';
 import '../providers/dashboard_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -37,7 +38,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(dashboardDataProvider);
+          ref.invalidate(userStokvelsProvider);
         },
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -93,96 +94,104 @@ class DashboardScreen extends ConsumerWidget {
             const Gap(8),
 
             // Next Contribution
-            AppCard(
-              onTap: () => context.pushNamed(RouteNames.groups),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+            if (dashboardData.nextContributionGroup.isNotEmpty)
+              AppCard(
+                onTap: () => context.pushNamed(RouteNames.groups),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.calendar_today_outlined,
+                        color: AppColors.secondary,
+                        size: 28,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.calendar_today_outlined,
-                      color: AppColors.secondary,
-                      size: 28,
+                    const Gap(16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Next Contribution',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          Text(
+                            '${currencyFormat.format(dashboardData.nextContributionAmount)} due in ${dashboardData.nextContributionDays} days',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(
+                            dashboardData.nextContributionGroup,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: AppColors.secondary),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const Gap(16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Next Contribution',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        Text(
-                          '${currencyFormat.format(dashboardData.nextContributionAmount)} due in ${dashboardData.nextContributionDays} days',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        Text(
-                          dashboardData.nextContributionGroup,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.secondary,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right, color: AppColors.textSecondaryLight),
-                ],
+                    const Icon(Icons.chevron_right,
+                        color: AppColors.textSecondaryLight),
+                  ],
+                ),
               ),
-            ),
-            const Gap(8),
+            if (dashboardData.nextContributionGroup.isNotEmpty) const Gap(8),
 
             // Next Payout
-            AppCard(
-              onTap: () => context.pushNamed(RouteNames.groups),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+            if (dashboardData.nextPayoutGroup.isNotEmpty)
+              AppCard(
+                onTap: () => context.pushNamed(RouteNames.groups),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.trending_up_outlined,
+                        color: AppColors.accent,
+                        size: 28,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.trending_up_outlined,
-                      color: AppColors.accent,
-                      size: 28,
+                    const Gap(16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Next Payout',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          Text(
+                            currencyFormat
+                                .format(dashboardData.nextPayoutAmount),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(color: AppColors.accent),
+                          ),
+                          Text(
+                            dashboardData.nextPayoutGroup,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: AppColors.accent),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const Gap(16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Next Payout',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        Text(
-                          'Your turn! ${currencyFormat.format(dashboardData.nextPayoutAmount)}',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: AppColors.accent,
-                              ),
-                        ),
-                        Text(
-                          dashboardData.nextPayoutGroup,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.accent,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right, color: AppColors.textSecondaryLight),
-                ],
+                    const Icon(Icons.chevron_right,
+                        color: AppColors.textSecondaryLight),
+                  ],
+                ),
               ),
-            ),
-            const Gap(8),
+            if (dashboardData.nextPayoutGroup.isNotEmpty) const Gap(8),
 
             // Next Meeting
             AppCard(
@@ -213,10 +222,11 @@ class DashboardScreen extends ConsumerWidget {
                           dashboardData.nextMeetingDate,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
-                        Text(
-                          dashboardData.nextMeetingLocation,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
+                        if (dashboardData.nextMeetingLocation.isNotEmpty)
+                          Text(
+                            dashboardData.nextMeetingLocation,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                       ],
                     ),
                   ),
@@ -226,39 +236,64 @@ class DashboardScreen extends ConsumerWidget {
             const Gap(24),
 
             // Recent Activity
-            Text(
-              'Recent Activity',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const Gap(8),
-            ...dashboardData.recentActivity.map(
-              (activity) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
+            if (dashboardData.recentActivity.isNotEmpty) ...[
+              Text(
+                'Recent Activity',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const Gap(8),
+              ...dashboardData.recentActivity.map(
+                (activity) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const Gap(12),
+                      Expanded(
+                        child: Text(
+                          activity.description,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                      Text(
+                        activity.timeAgo,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
+            // Empty state when no groups
+            if (dashboardData.groupCount == 0) ...[
+              const Gap(32),
+              Center(
+                child: Column(
                   children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
+                    Icon(
+                      Icons.groups_outlined,
+                      size: 64,
+                      color: AppColors.textSecondaryLight,
                     ),
-                    const Gap(12),
-                    Expanded(
-                      child: Text(
-                        activity.description,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ),
+                    const Gap(16),
                     Text(
-                      activity.timeAgo,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      'Join or create a stokvel to get started',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: AppColors.textSecondaryLight,
+                          ),
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/stokvel_type_chip.dart';
 import '../providers/groups_provider.dart';
 
@@ -15,7 +16,7 @@ class GroupsListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final groups = ref.watch(groupsListProvider);
+    final stokvelsAsync = ref.watch(userStokvelsProvider);
     final currencyFormat =
         NumberFormat.currency(locale: 'en_ZA', symbol: 'R', decimalDigits: 0);
 
@@ -29,16 +30,33 @@ class GroupsListScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: groups.isEmpty
-          ? EmptyState(
+      body: stokvelsAsync.when(
+        loading: () => const Center(child: LoadingIndicator()),
+        error: (error, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48),
+              const Gap(8),
+              Text('Failed to load groups\n$error',
+                  textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+        data: (groups) {
+          if (groups.isEmpty) {
+            return EmptyState(
               icon: Icons.groups_outlined,
               title: 'No stokvels yet',
               message:
                   "You're not in any stokvels yet. Create one or ask your chairperson for an invite link.",
               actionLabel: 'Create Stokvel',
               onAction: () => context.pushNamed(RouteNames.createGroup),
-            )
-          : ListView.builder(
+            );
+          }
+          return RefreshIndicator(
+            onRefresh: () async => ref.invalidate(userStokvelsProvider),
+            child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: groups.length,
               itemBuilder: (context, index) {
@@ -81,15 +99,19 @@ class GroupsListScreen extends ConsumerWidget {
                       const Gap(8),
                       Text(
                         'Balance: ${currencyFormat.format(group.totalCollected)}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                     ],
                   ),
                 );
               },
             ),
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.pushNamed(RouteNames.createGroup),
         icon: const Icon(Icons.add),

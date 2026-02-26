@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/stokvel.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../providers/groups_provider.dart';
+import '../services/invite_service.dart';
 
-class CreateGroupScreen extends StatefulWidget {
+class CreateGroupScreen extends ConsumerStatefulWidget {
   const CreateGroupScreen({super.key});
 
   @override
-  State<CreateGroupScreen> createState() => _CreateGroupScreenState();
+  ConsumerState<CreateGroupScreen> createState() => _CreateGroupScreenState();
 }
 
-class _CreateGroupScreenState extends State<CreateGroupScreen> {
+class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
   int _currentStep = 0;
   final _formKeys = List.generate(4, (_) => GlobalKey<FormState>());
+  bool _isCreating = false;
 
   // Step 1
   final _nameController = TextEditingController();
@@ -61,9 +67,65 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     }
   }
 
-  void _createGroup() {
-    // TODO: Create group in Firestore
-    context.pop();
+  Future<void> _createGroup() async {
+    final authState = ref.read(authStateProvider);
+    final profile = ref.read(userProfileProvider).valueOrNull;
+    if (authState.user == null) return;
+
+    setState(() => _isCreating = true);
+
+    final frequencyMap = {
+      'Weekly': 'weekly',
+      'Biweekly': 'biweekly',
+      'Monthly': 'monthly',
+    };
+
+    try {
+      final stokvelId =
+          await ref.read(createStokvelProvider.notifier).create(
+                name: _nameController.text.trim(),
+                type: _selectedType.name,
+                contributionAmount:
+                    double.tryParse(_amountController.text) ?? 0,
+                contributionFrequency: frequencyMap[_frequency] ?? 'monthly',
+                createdBy: authState.user!.uid,
+                creatorName: profile?.displayName ?? 'Unknown',
+                creatorPhone: authState.user!.phoneNumber ?? '',
+                description: _descriptionController.text.trim().isNotEmpty
+                    ? _descriptionController.text.trim()
+                    : null,
+              );
+
+      if (stokvelId != null) {
+        // Generate invite code
+        final code = await InviteService().createInvite(
+          stokvelId: stokvelId,
+          createdBy: authState.user!.uid,
+        );
+        if (mounted) {
+          // Navigate to invite screen
+          context.pushNamed(
+            RouteNames.invite,
+            pathParameters: {'stokvelId': stokvelId},
+            queryParameters: {
+              'name': _nameController.text.trim(),
+              'code': code,
+            },
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create group: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCreating = false);
+    }
   }
 
   @override
@@ -75,7 +137,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       ),
       body: Stepper(
         currentStep: _currentStep,
-        onStepContinue: _next,
+        onStepContinue: _isCreating ? null : _next,
         onStepCancel: _back,
         controlsBuilder: (context, details) {
           return Padding(
@@ -85,7 +147,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 Expanded(
                   child: AppButton(
                     label: _currentStep == 3 ? 'Create Stokvel' : 'Next',
-                    onPressed: details.onStepContinue,
+                    onPressed: _isCreating ? null : details.onStepContinue,
+                    isLoading: _isCreating,
                   ),
                 ),
               ],
@@ -179,7 +242,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                         onSelected: (selected) {
                           if (selected) setState(() => _frequency = f);
                         },
-                        selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                        selectedColor:
+                            AppColors.primary.withValues(alpha: 0.2),
                       );
                     }).toList(),
                   ),
@@ -244,85 +308,21 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Share this link with your stokvel members:',
+                    'After creating the group, you can invite members via a link or QR code.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  const Gap(12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundLight,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'stokvelmanager.app/join/abc123',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.copy, size: 20),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
+                  const Gap(16),
+                  const Icon(
+                    Icons.qr_code_2,
+                    size: 80,
+                    color: AppColors.textSecondaryLight,
                   ),
                   const Gap(16),
-                  Center(
-                    child: Container(
-                      width: 150,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.divider),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.qr_code_2,
-                          size: 100,
-                          color: AppColors.textPrimaryLight,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Gap(16),
-                  AppButton(
-                    label: 'Share via WhatsApp',
-                    variant: AppButtonVariant.outline,
-                    onPressed: () {},
-                    icon: Icons.share,
-                  ),
-                  const Gap(16),
-                  const Divider(),
-                  const Gap(8),
                   Text(
-                    'Or add manually',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const Gap(8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          hint: '82 123 4567',
-                          controller: _invitePhoneController,
-                          keyboardType: TextInputType.phone,
-                          prefix: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Text('+27'),
-                          ),
+                    'An invite link and QR code will be generated after the group is created.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondaryLight,
                         ),
-                      ),
-                      const Gap(8),
-                      IconButton.filled(
-                        onPressed: () {},
-                        icon: const Icon(Icons.add),
-                      ),
-                    ],
                   ),
                 ],
               ),

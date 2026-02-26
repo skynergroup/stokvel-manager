@@ -16,4 +16,5 @@ class RouteNames {
   static const String recordContribution = 'record-contribution';
   static const String scheduleMeeting = 'schedule-meeting';
   static const String notifications = 'notifications';
+  static const String invite = 'invite';
 }

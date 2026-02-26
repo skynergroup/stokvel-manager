@@ -1,25 +1,25 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../providers/auth_provider.dart';
 
-class OtpScreen extends StatefulWidget {
+class OtpScreen extends ConsumerStatefulWidget {
   const OtpScreen({super.key});
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState();
+  ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> {
+class _OtpScreenState extends ConsumerState<OtpScreen> {
   final List<TextEditingController> _controllers =
       List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
-  bool _isLoading = false;
   int _resendSeconds = 60;
   Timer? _timer;
 
@@ -70,24 +70,41 @@ class _OtpScreenState extends State<OtpScreen> {
 
   void _verify() {
     if (_code.length != 6) return;
-    setState(() => _isLoading = true);
-    // TODO: Implement Firebase OTP verification
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        context.goNamed(RouteNames.profileSetup);
-      }
-    });
+    ref.read(authStateProvider.notifier).verifyOtp(_code);
   }
 
   void _resend() {
     if (_resendSeconds > 0) return;
     _startResendTimer();
-    // TODO: Resend OTP via Firebase
+    ref.read(authStateProvider.notifier).resendCode();
+  }
+
+  void _clearCode() {
+    for (final c in _controllers) {
+      c.clear();
+    }
+    _focusNodes[0].requestFocus();
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+    final phoneNumber = authState.phoneNumber ?? '+27 ** *** ****';
+    final isLoading = authState.status == AuthStatus.loading;
+
+    ref.listen<AuthState>(authStateProvider, (prev, next) {
+      // On verified, router redirect handles navigation
+      if (next.error != null && prev?.error != next.error) {
+        _clearCode();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.pop()),
@@ -104,7 +121,7 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
               const Gap(8),
               Text(
-                'Enter the 6-digit code sent to\n+27 82 123 4567',
+                'Enter the 6-digit code sent to\n$phoneNumber',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondaryLight,
                     ),
@@ -122,6 +139,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       maxLength: 1,
+                      enabled: !isLoading,
                       style: Theme.of(context).textTheme.headlineMedium,
                       decoration: InputDecoration(
                         counterText: '',
@@ -155,8 +173,8 @@ class _OtpScreenState extends State<OtpScreen> {
               const Gap(32),
               AppButton(
                 label: 'Verify',
-                onPressed: _verify,
-                isLoading: _isLoading,
+                onPressed: isLoading ? null : _verify,
+                isLoading: isLoading,
               ),
             ],
           ),

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +12,7 @@ import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/groups/screens/create_group_screen.dart';
 import '../../features/groups/screens/group_detail_screen.dart';
 import '../../features/groups/screens/groups_list_screen.dart';
+import '../../features/groups/screens/invite_screen.dart';
 import '../../features/contributions/screens/contributions_screen.dart';
 import '../../features/meetings/screens/schedule_meeting_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
@@ -22,22 +24,36 @@ import 'route_names.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final hasProfile = ref.watch(hasProfileProvider);
 
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
       final isLoggedIn = authState.isLoggedIn;
-      final isOnAuthRoute = state.matchedLocation == '/phone-auth' ||
-          state.matchedLocation == '/otp' ||
-          state.matchedLocation == '/onboarding' ||
-          state.matchedLocation == '/splash';
+      final location = state.matchedLocation;
+      final isAuthRoute = location == '/phone-auth' ||
+          location == '/otp' ||
+          location == '/onboarding' ||
+          location == '/splash' ||
+          location == '/profile-setup';
 
-      if (!isLoggedIn && !isOnAuthRoute) {
+      // Not logged in — send to onboarding (unless already on auth flow)
+      if (!isLoggedIn && !isAuthRoute) {
         return '/onboarding';
       }
-      if (isLoggedIn && isOnAuthRoute) {
-        return '/home/dashboard';
+
+      // Logged in but on auth flow routes
+      if (isLoggedIn && isAuthRoute) {
+        // Check if profile exists
+        final profileReady = hasProfile.valueOrNull ?? false;
+        if (!profileReady && location != '/profile-setup') {
+          return '/profile-setup';
+        }
+        if (profileReady) {
+          return '/home/dashboard';
+        }
       }
+
       return null;
     },
     routes: [
@@ -102,6 +118,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/create-group',
         name: RouteNames.createGroup,
         builder: (context, state) => const CreateGroupScreen(),
+      ),
+      GoRoute(
+        path: '/invite/:stokvelId',
+        name: RouteNames.invite,
+        builder: (context, state) => InviteScreen(
+          stokvelId: state.pathParameters['stokvelId']!,
+          stokvelName: state.uri.queryParameters['name'] ?? '',
+          inviteCode: state.uri.queryParameters['code'] ?? '',
+        ),
       ),
       GoRoute(
         path: '/record-contribution/:groupId',
@@ -177,11 +202,29 @@ class _ShellScaffold extends StatelessWidget {
   }
 }
 
-class _SplashScreen extends StatelessWidget {
+class _SplashScreen extends ConsumerWidget {
   const _SplashScreen();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Listen to auth state and redirect accordingly
+    ref.listen<AuthState>(authStateProvider, (prev, next) {
+      if (next.isLoggedIn) {
+        // Router redirect will handle where to go
+        context.go('/home/dashboard');
+      } else if (next.status != AuthStatus.initial) {
+        context.go('/onboarding');
+      }
+    });
+
+    // Auto-redirect after checking current auth
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      Future.microtask(() {
+        if (context.mounted) context.go('/onboarding');
+      });
+    }
+
     return Scaffold(
       body: Center(
         child: Column(
