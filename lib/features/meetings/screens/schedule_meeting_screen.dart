@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../providers/meeting_provider.dart';
 
-class ScheduleMeetingScreen extends StatefulWidget {
+class ScheduleMeetingScreen extends ConsumerStatefulWidget {
   final String groupId;
   const ScheduleMeetingScreen({super.key, required this.groupId});
 
   @override
-  State<ScheduleMeetingScreen> createState() => _ScheduleMeetingScreenState();
+  ConsumerState<ScheduleMeetingScreen> createState() =>
+      _ScheduleMeetingScreenState();
 }
 
-class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
+class _ScheduleMeetingScreenState
+    extends ConsumerState<ScheduleMeetingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _locationController = TextEditingController();
@@ -54,16 +59,50 @@ class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
     if (time != null) setState(() => _selectedTime = time);
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final userId = ref.read(authStateProvider).user?.uid;
+    if (userId == null) return;
+
     setState(() => _isLoading = true);
-    // TODO: Save meeting to Firestore
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
+
+    final meetingDate = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
+
+    final success =
+        await ref.read(scheduleMeetingProvider.notifier).schedule(
+              stokvelId: widget.groupId,
+              title: _titleController.text.trim(),
+              date: meetingDate,
+              createdBy: userId,
+              locationName:
+                  _isInPerson ? _locationController.text.trim() : null,
+              virtualLink:
+                  !_isInPerson ? _linkController.text.trim() : null,
+              agenda: _agendaController.text.trim().isNotEmpty
+                  ? _agendaController.text.trim()
+                  : null,
+            );
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Meeting scheduled')),
+        );
         context.pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to schedule meeting')),
+        );
       }
-    });
+    }
   }
 
   @override
@@ -173,6 +212,7 @@ class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
                   onChanged: (v) =>
                       setState(() => _notifyWhatsApp = v ?? true),
                   title: const Text('Send via WhatsApp'),
+                  subtitle: const Text('Will be available in SKY-51'),
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
                 ),

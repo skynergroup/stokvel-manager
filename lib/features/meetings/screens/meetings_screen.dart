@@ -1,73 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/loading_indicator.dart';
+import '../providers/meeting_provider.dart';
 
-class MeetingsScreen extends StatelessWidget {
+class MeetingsScreen extends ConsumerWidget {
   const MeetingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final meetingsAsync = ref.watch(upcomingMeetingsProvider);
     final dateFormat = DateFormat('EEE d MMM, HH:mm');
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text('Upcoming Meetings',
-            style: Theme.of(context).textTheme.titleLarge),
-        const Gap(8),
-        _MeetingCard(
-          title: 'March Monthly Meeting',
-          dateStr: dateFormat.format(DateTime(2026, 3, 1, 10, 0)),
-          location: "Mam' Nkosi's house",
-          isVirtual: false,
-          yesCount: 8,
-          noCount: 2,
-          maybeCount: 1,
-          groupName: 'Umoja Savings',
-        ),
-        _MeetingCard(
-          title: 'Emergency Meeting',
-          dateStr: dateFormat.format(DateTime(2026, 3, 5, 18, 0)),
-          location: 'Google Meet',
-          isVirtual: true,
-          yesCount: 15,
-          noCount: 5,
-          maybeCount: 3,
-          groupName: 'Kasi Burial Society',
-        ),
-        const Gap(24),
-        Text('Past Meetings', style: Theme.of(context).textTheme.titleLarge),
-        const Gap(8),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('February Monthly Meeting',
-                  style: Theme.of(context).textTheme.titleSmall),
-              const Gap(4),
-              Text(
-                dateFormat.format(DateTime(2026, 2, 1, 10, 0)),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              Text('Umoja Savings',
-                  style: Theme.of(context).textTheme.bodySmall),
-              const Gap(4),
-              Row(
-                children: [
-                  const Icon(Icons.check_circle,
-                      color: AppColors.success, size: 16),
-                  const Gap(4),
-                  Text('10 attended',
-                      style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
+    return meetingsAsync.when(
+      loading: () => const Center(child: LoadingIndicator()),
+      error: (error, _) => Center(child: Text('Error: $error')),
+      data: (meetings) {
+        if (meetings.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event_outlined,
+                    size: 64, color: AppColors.textSecondaryLight),
+                const Gap(16),
+                Text(
+                  'No upcoming meetings',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textSecondaryLight,
+                      ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text('Upcoming Meetings',
+                style: Theme.of(context).textTheme.titleLarge),
+            const Gap(8),
+            ...meetings.map((entry) => _MeetingCard(
+                  title: entry.meeting.title,
+                  dateStr: dateFormat.format(entry.meeting.date),
+                  location: entry.meeting.isVirtual
+                      ? (entry.meeting.virtualLink ?? 'Virtual')
+                      : (entry.meeting.locationName ?? 'TBD'),
+                  isVirtual: entry.meeting.isVirtual,
+                  yesCount: entry.meeting.yesCount,
+                  noCount: entry.meeting.noCount,
+                  maybeCount: entry.meeting.maybeCount,
+                  groupName: entry.stokvelName,
+                  onTap: () => context.pushNamed(
+                    RouteNames.meetingDetail,
+                    pathParameters: {
+                      'groupId': entry.stokvelId,
+                      'meetingId': entry.meeting.id,
+                    },
+                  ),
+                )),
+          ],
+        );
+      },
     );
   }
 }
@@ -81,6 +82,7 @@ class _MeetingCard extends StatelessWidget {
   final int noCount;
   final int maybeCount;
   final String groupName;
+  final VoidCallback? onTap;
 
   const _MeetingCard({
     required this.title,
@@ -91,11 +93,13 @@ class _MeetingCard extends StatelessWidget {
     required this.noCount,
     required this.maybeCount,
     required this.groupName,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -108,7 +112,9 @@ class _MeetingCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  isVirtual ? Icons.videocam_outlined : Icons.location_on_outlined,
+                  isVirtual
+                      ? Icons.videocam_outlined
+                      : Icons.location_on_outlined,
                   color: AppColors.info,
                   size: 20,
                 ),
@@ -130,8 +136,8 @@ class _MeetingCard extends StatelessWidget {
           const Gap(12),
           Row(
             children: [
-              const Icon(Icons.schedule, size: 16,
-                  color: AppColors.textSecondaryLight),
+              const Icon(Icons.schedule,
+                  size: 16, color: AppColors.textSecondaryLight),
               const Gap(4),
               Text(dateStr, style: Theme.of(context).textTheme.bodySmall),
             ],
@@ -145,7 +151,11 @@ class _MeetingCard extends StatelessWidget {
                 color: AppColors.textSecondaryLight,
               ),
               const Gap(4),
-              Text(location, style: Theme.of(context).textTheme.bodySmall),
+              Expanded(
+                child: Text(location,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    overflow: TextOverflow.ellipsis),
+              ),
             ],
           ),
           const Gap(8),
@@ -158,7 +168,9 @@ class _MeetingCard extends StatelessWidget {
                   label: 'No', count: noCount, color: AppColors.error),
               const Gap(8),
               _RsvpBadge(
-                  label: 'Maybe', count: maybeCount, color: AppColors.warning),
+                  label: 'Maybe',
+                  count: maybeCount,
+                  color: AppColors.warning),
             ],
           ),
         ],

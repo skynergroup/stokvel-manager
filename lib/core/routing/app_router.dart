@@ -15,8 +15,10 @@ import '../../features/groups/screens/group_detail_screen.dart';
 import '../../features/groups/screens/groups_list_screen.dart';
 import '../../features/groups/screens/invite_screen.dart';
 import '../../features/contributions/screens/contributions_screen.dart';
+import '../../features/meetings/screens/meeting_detail_screen.dart';
 import '../../features/meetings/screens/schedule_meeting_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/payouts/screens/payout_detail_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/payouts/screens/payouts_screen.dart';
@@ -149,6 +151,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: RouteNames.scheduleMeeting,
         builder: (context, state) => ScheduleMeetingScreen(
           groupId: state.pathParameters['groupId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/payout-detail/:groupId/:payoutId',
+        name: RouteNames.payoutDetail,
+        builder: (context, state) => PayoutDetailScreen(
+          groupId: state.pathParameters['groupId']!,
+          payoutId: state.pathParameters['payoutId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/meeting-detail/:groupId/:meetingId',
+        name: RouteNames.meetingDetail,
+        builder: (context, state) => MeetingDetailScreen(
+          groupId: state.pathParameters['groupId']!,
+          meetingId: state.pathParameters['meetingId']!,
         ),
       ),
       GoRoute(
