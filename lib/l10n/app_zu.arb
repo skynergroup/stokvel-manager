@@ -1,0 +1,164 @@
+{
+  "@@locale": "zu",
+  "appName": "StokvelManager",
+  "welcome": "Siyakwamukela",
+  "welcomeTo": "Siyakwamukela ku",
+  "signIn": "Ngena",
+  "signOut": "Phuma",
+  "continueButton": "Qhubeka",
+  "cancel": "Khansela",
+  "save": "Gcina",
+  "delete": "Susa",
+  "edit": "Hlela",
+  "done": "Kwenziwe",
+  "ok": "Kulungile",
+  "error": "Iphutha",
+  "loading": "Iyalayisha...",
+  "retry": "Zama futhi",
+  "or": "noma",
+
+  "phoneAuthTitle": "Faka inombolo yakho yocingo ukuze uqale",
+  "phoneNumber": "Inombolo Yocingo",
+  "phoneHint": "82 123 4567",
+  "phoneSmsNote": "Sizokuthumela ikhodi kanye nge-SMS",
+  "phoneValidationEmpty": "Sicela ufake inombolo yakho yocingo",
+  "phoneValidationInvalid": "Faka inombolo efanele ye-SA enezinombolo eziyi-9",
+  "continueWithGoogle": "Qhubeka nge-Google",
+  "termsPrefix": "Ngokuqhubeka uyavuma ",
+  "terms": "Imigomo",
+  "and": " kanye ",
+  "privacyPolicy": "Inqubomgomo Yobumfihlo",
+
+  "verifyNumber": "Qinisekisa inombolo yakho",
+  "otpSubtitle": "Faka ikhodi yezinombolo eziyi-6 ethunyelwe ku",
+  "verify": "Qinisekisa",
+  "resendCode": "Thumela futhi Ikhodi",
+  "resendIn": "Thumela futhi ngo {seconds}s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "didntReceiveCode": "Awuyitholanga ikhodi?",
+
+  "profileSetup": "Setha iphrofayili yakho",
+  "fullName": "Igama Eliphelele",
+  "preferredLanguage": "Ulimi Olukhethwayo",
+  "saveAndContinue": "Gcina & Qhubeka",
+
+  "home": "Ikhaya",
+  "groups": "Amaqembu",
+  "money": "Imali",
+  "profile": "Iphrofayili",
+
+  "goodMorning": "Sawubona ekuseni",
+  "goodAfternoon": "Sawubona ntambama",
+  "goodEvening": "Sawubona kusihlwa",
+  "totalSavings": "Okonga Konke",
+  "acrossGroups": "Kumaqembu angu-{count}",
+  "@acrossGroups": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "nextContribution": "Umnikelo Olandelayo",
+  "dueInDays": "{amount} uyafuneka ezinsukwini ezingu-{days}",
+  "@dueInDays": {
+    "placeholders": {
+      "amount": {"type": "String"},
+      "days": {"type": "int"}
+    }
+  },
+  "nextPayout": "Ukukhokha Okulandelayo",
+  "nextMeeting": "Umhlangano Olandelayo",
+  "recentActivity": "Imisebenzi Yakamuva",
+  "joinOrCreate": "Joyina noma wenze isitokfela ukuze uqale",
+
+  "myGroups": "Amaqembu Ami",
+  "noStokvelsYet": "Awekho amasitokfela okwamanje",
+  "noStokvelsMessage": "Awukho esitokfeleni okwamanje. Dala elinye noma ucele usihlalo wakho isixhumanisi sokumema.",
+  "createStokvel": "Dala Isitokfela",
+  "create": "Dala",
+  "members": "Amalungu",
+  "membersCount": "Amalungu angu-{count}",
+  "@membersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "perMonth": "{amount}/ngenyanga",
+  "@perMonth": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "balance": "Ibhalansi",
+  "balanceAmount": "Ibhalansi: {amount}",
+  "@balanceAmount": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "failedToLoadGroups": "Yehlulekile ukulayisha amaqembu",
+
+  "overview": "Ukubuka Konke",
+  "contributions": "Iminikelo",
+  "payouts": "Ukukhokha",
+  "meetings": "Imihlangano",
+
+  "recordPayment": "Bhala Ukukhokha",
+  "member": "Ilungu",
+  "amount": "Inani",
+  "paymentDate": "Usuku Lokukhokha",
+  "proofOfPayment": "Ubufakazi Bokukhokha",
+  "takePhoto": "Thatha Isithombe",
+  "uploadFile": "Layisha Ifayela",
+  "notes": "Amanothi",
+
+  "scheduleMeeting": "Hlela Umhlangano",
+  "meetingTitle": "Isihloko Somhlangano",
+  "dateAndTime": "Usuku & Isikhathi",
+  "location": "Indawo",
+  "inPerson": "Ngokuba Khona",
+  "virtual": "Nge-inthanethi",
+  "agenda": "I-Ajenda",
+  "sendViaWhatsApp": "Thumela nge-WhatsApp",
+
+  "rotational": "Isiyondonqa",
+  "savings": "Okongayo",
+  "burialSociety": "Umbutho Wokungcwaba",
+  "grocery": "Okwezitolo",
+  "investment": "Ukutshalwa Kwemali",
+  "hybrid": "Okuxubile",
+
+  "notifications": "Izaziso",
+  "today": "Namuhla",
+  "yesterday": "Izolo",
+
+  "settings": "Izilungiselelo",
+  "language": "Ulimi",
+  "darkMode": "Imodi Emnyama",
+  "notificationsEnabled": "Izaziso",
+  "whatsAppAlerts": "Izexwayiso ze-WhatsApp",
+  "about": "Mayelana",
+  "termsOfService": "Imigomo Yokusetshenziswa",
+  "helpAndSupport": "Usizo & Ukwesekwa",
+  "rateTheApp": "Nika Amamaki I-App",
+  "account": "I-Akhawunti",
+  "logOut": "Phuma",
+  "deleteAccount": "Susa I-Akhawunti",
+  "editProfile": "Hlela Iphrofayili",
+
+  "inviteMembers": "Mema Amalungu",
+  "shareViaWhatsApp": "Yabelana nge-WhatsApp",
+
+  "onboardingTitle1": "Landelela Yonke iRandi",
+  "onboardingDesc1": "Bona ngqo ukuthi ubani okhokhe, ubani okweletayo, nokuthi yonke imali iya kuphi.",
+  "onboardingTitle2": "Ungaphuthelwa Ukukhokha",
+  "onboardingDesc2": "Ukuhlela kwerotation okuzenzakalelayo nezikhumbuzo zawo wonke amalungu.",
+  "onboardingTitle3": "Iqembu Lakho, Lixhumene",
+  "onboardingDesc3": "Izikhumbuzo ze-WhatsApp, ukuhlela imihlangano, namarekhodi asobala kuwo wonke umuntu.",
+  "skip": "Yeqa",
+  "next": "Okulandelayo",
+  "getStarted": "Qala"
+}

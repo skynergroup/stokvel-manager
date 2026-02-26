@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,29 +18,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
 
-  static const _pages = [
-    _OnboardingPage(
-      icon: Icons.savings_outlined,
-      title: 'Track Every Rand',
-      description:
-          'See exactly who paid, who owes, and where every cent goes.',
-    ),
-    _OnboardingPage(
-      icon: Icons.calendar_month_outlined,
-      title: 'Never Miss a Payout',
-      description:
-          'Automatic rotation scheduling and reminders for every member.',
-    ),
-    _OnboardingPage(
-      icon: Icons.people_outline,
-      title: 'Your Group, Connected',
-      description:
-          'WhatsApp reminders, meeting scheduling, and transparent records for everyone.',
-    ),
+  static const _icons = [
+    Icons.savings_outlined,
+    Icons.calendar_month_outlined,
+    Icons.people_outline,
   ];
 
   void _next() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < _icons.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -61,7 +47,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLastPage = _currentPage == _pages.length - 1;
+    final l10n = AppLocalizations.of(context)!;
+    final isLastPage = _currentPage == _icons.length - 1;
+
+    final titles = [
+      l10n.onboardingTitle1,
+      l10n.onboardingTitle2,
+      l10n.onboardingTitle3,
+    ];
+    final descriptions = [
+      l10n.onboardingDesc1,
+      l10n.onboardingDesc2,
+      l10n.onboardingDesc3,
+    ];
 
     return Scaffold(
       body: SafeArea(
@@ -70,11 +68,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: _pages.length,
+                itemCount: _icons.length,
                 onPageChanged: (index) =>
                     setState(() => _currentPage = index),
                 itemBuilder: (context, index) {
-                  final page = _pages[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Column(
@@ -88,20 +85,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            page.icon,
+                            _icons[index],
                             size: 80,
                             color: AppColors.primary,
                           ),
                         ),
                         const Gap(48),
                         Text(
-                          page.title,
+                          titles[index],
                           style: Theme.of(context).textTheme.displaySmall,
                           textAlign: TextAlign.center,
                         ),
                         const Gap(16),
                         Text(
-                          page.description,
+                          descriptions[index],
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: AppColors.textSecondaryLight,
                               ),
@@ -117,7 +114,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                _pages.length,
+                _icons.length,
                 (index) => AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -137,18 +134,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: isLastPage
                   ? AppButton(
-                      label: 'Get Started',
+                      label: l10n.getStarted,
                       onPressed: _goToAuth,
                     )
                   : Row(
                       children: [
                         TextButton(
                           onPressed: _goToAuth,
-                          child: const Text('Skip'),
+                          child: Text(l10n.skip),
                         ),
                         const Spacer(),
                         AppButton(
-                          label: 'Next',
+                          label: l10n.next,
                           onPressed: _next,
                           fullWidth: false,
                           icon: Icons.arrow_forward,
@@ -162,16 +159,4 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
-}
-
-class _OnboardingPage {
-  final IconData icon;
-  final String title;
-  final String description;
-
-  const _OnboardingPage({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
 }

@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.skynergroup.stokvelmanager.stokvel_manager"
+    namespace = "com.skynergroup.stokvelmanager"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.skynergroup.stokvelmanager.stokvel_manager"
+        applicationId = "com.skynergroup.stokvelmanager"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

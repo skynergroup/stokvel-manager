@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -20,6 +21,7 @@ import '../../features/meetings/screens/schedule_meeting_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/payouts/screens/payout_detail_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/onboarding/screens/splash_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/payouts/screens/payouts_screen.dart';
 import '../../features/meetings/screens/meetings_screen.dart';
@@ -63,7 +65,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         name: RouteNames.splash,
-        builder: (context, state) => const _SplashScreen(),
+        builder: (context, state) => const _SplashWrapper(),
       ),
       GoRoute(
         path: '/onboarding',
@@ -197,31 +199,32 @@ class _ShellScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: child,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex(context),
         onTap: (index) => context.go(_tabs[index]),
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            activeIcon: const Icon(Icons.home),
+            label: l10n.home,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.groups_outlined),
-            activeIcon: Icon(Icons.groups),
-            label: 'Groups',
+            icon: const Icon(Icons.groups_outlined),
+            activeIcon: const Icon(Icons.groups),
+            label: l10n.groups,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            activeIcon: Icon(Icons.account_balance_wallet),
-            label: 'Money',
+            icon: const Icon(Icons.account_balance_wallet_outlined),
+            activeIcon: const Icon(Icons.account_balance_wallet),
+            label: l10n.money,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
+            label: l10n.profile,
           ),
         ],
       ),
@@ -229,15 +232,14 @@ class _ShellScaffold extends StatelessWidget {
   }
 }
 
-class _SplashScreen extends ConsumerWidget {
-  const _SplashScreen();
+class _SplashWrapper extends ConsumerWidget {
+  const _SplashWrapper();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Listen to auth state and redirect accordingly
     ref.listen<AuthState>(authStateProvider, (prev, next) {
       if (next.isLoggedIn) {
-        // Router redirect will handle where to go
         context.go('/home/dashboard');
       } else if (next.status != AuthStatus.initial) {
         context.go('/onboarding');
@@ -252,27 +254,7 @@ class _SplashScreen extends ConsumerWidget {
       });
     }
 
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.savings,
-              size: 80,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'StokvelManager',
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            const SizedBox(height: 24),
-            const CircularProgressIndicator(),
-          ],
-        ),
-      ),
-    );
+    return const SplashScreen();
   }
 }
 
@@ -301,9 +283,10 @@ class _MoneyTabScreenState extends State<_MoneyTabScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Money'),
+        title: Text(l10n.money),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
@@ -312,10 +295,10 @@ class _MoneyTabScreenState extends State<_MoneyTabScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Contributions'),
-            Tab(text: 'Payouts'),
-            Tab(text: 'Meetings'),
+          tabs: [
+            Tab(text: l10n.contributions),
+            Tab(text: l10n.payouts),
+            Tab(text: l10n.meetings),
           ],
         ),
       ),

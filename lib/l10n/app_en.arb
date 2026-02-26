@@ -1,0 +1,164 @@
+{
+  "@@locale": "en",
+  "appName": "StokvelManager",
+  "welcome": "Welcome",
+  "welcomeTo": "Welcome to",
+  "signIn": "Sign In",
+  "signOut": "Sign Out",
+  "continueButton": "Continue",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "done": "Done",
+  "ok": "OK",
+  "error": "Error",
+  "loading": "Loading...",
+  "retry": "Retry",
+  "or": "or",
+
+  "phoneAuthTitle": "Enter your phone number to get started",
+  "phoneNumber": "Phone Number",
+  "phoneHint": "82 123 4567",
+  "phoneSmsNote": "We'll send you a one-time code via SMS",
+  "phoneValidationEmpty": "Please enter your phone number",
+  "phoneValidationInvalid": "Enter a valid 9-digit SA phone number",
+  "continueWithGoogle": "Continue with Google",
+  "termsPrefix": "By continuing you agree to our ",
+  "terms": "Terms",
+  "and": " and ",
+  "privacyPolicy": "Privacy Policy",
+
+  "verifyNumber": "Verify your number",
+  "otpSubtitle": "Enter the 6-digit code sent to",
+  "verify": "Verify",
+  "resendCode": "Resend Code",
+  "resendIn": "Resend in {seconds}s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "didntReceiveCode": "Didn't receive code?",
+
+  "profileSetup": "Set up your profile",
+  "fullName": "Full Name",
+  "preferredLanguage": "Preferred Language",
+  "saveAndContinue": "Save & Continue",
+
+  "home": "Home",
+  "groups": "Groups",
+  "money": "Money",
+  "profile": "Profile",
+
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  "totalSavings": "Total Savings",
+  "acrossGroups": "Across {count} groups",
+  "@acrossGroups": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "nextContribution": "Next Contribution",
+  "dueInDays": "{amount} due in {days} days",
+  "@dueInDays": {
+    "placeholders": {
+      "amount": {"type": "String"},
+      "days": {"type": "int"}
+    }
+  },
+  "nextPayout": "Next Payout",
+  "nextMeeting": "Next Meeting",
+  "recentActivity": "Recent Activity",
+  "joinOrCreate": "Join or create a stokvel to get started",
+
+  "myGroups": "My Groups",
+  "noStokvelsYet": "No stokvels yet",
+  "noStokvelsMessage": "You're not in any stokvels yet. Create one or ask your chairperson for an invite link.",
+  "createStokvel": "Create Stokvel",
+  "create": "Create",
+  "members": "Members",
+  "membersCount": "{count} members",
+  "@membersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "perMonth": "{amount}/month",
+  "@perMonth": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "balance": "Balance",
+  "balanceAmount": "Balance: {amount}",
+  "@balanceAmount": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "failedToLoadGroups": "Failed to load groups",
+
+  "overview": "Overview",
+  "contributions": "Contributions",
+  "payouts": "Payouts",
+  "meetings": "Meetings",
+
+  "recordPayment": "Record Payment",
+  "member": "Member",
+  "amount": "Amount",
+  "paymentDate": "Payment Date",
+  "proofOfPayment": "Proof of Payment",
+  "takePhoto": "Take Photo",
+  "uploadFile": "Upload File",
+  "notes": "Notes",
+
+  "scheduleMeeting": "Schedule Meeting",
+  "meetingTitle": "Meeting Title",
+  "dateAndTime": "Date & Time",
+  "location": "Location",
+  "inPerson": "In Person",
+  "virtual": "Virtual",
+  "agenda": "Agenda",
+  "sendViaWhatsApp": "Send via WhatsApp",
+
+  "rotational": "Rotational",
+  "savings": "Savings",
+  "burialSociety": "Burial Society",
+  "grocery": "Grocery",
+  "investment": "Investment",
+  "hybrid": "Hybrid",
+
+  "notifications": "Notifications",
+  "today": "Today",
+  "yesterday": "Yesterday",
+
+  "settings": "Settings",
+  "language": "Language",
+  "darkMode": "Dark Mode",
+  "notificationsEnabled": "Notifications",
+  "whatsAppAlerts": "WhatsApp Alerts",
+  "about": "About",
+  "termsOfService": "Terms of Service",
+  "helpAndSupport": "Help & Support",
+  "rateTheApp": "Rate the App",
+  "account": "Account",
+  "logOut": "Log Out",
+  "deleteAccount": "Delete Account",
+  "editProfile": "Edit Profile",
+
+  "inviteMembers": "Invite Members",
+  "shareViaWhatsApp": "Share via WhatsApp",
+
+  "onboardingTitle1": "Track Every Rand",
+  "onboardingDesc1": "See exactly who paid, who owes, and where every cent goes.",
+  "onboardingTitle2": "Never Miss a Payout",
+  "onboardingDesc2": "Automatic rotation scheduling and reminders for every member.",
+  "onboardingTitle3": "Your Group, Connected",
+  "onboardingDesc3": "WhatsApp reminders, meeting scheduling, and transparent records for everyone.",
+  "skip": "Skip",
+  "next": "Next",
+  "getStarted": "Get Started"
+}

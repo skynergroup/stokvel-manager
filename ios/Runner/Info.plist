@@ -49,6 +49,10 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>StokvelManager needs camera access to take proof of payment photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>StokvelManager needs photo library access to upload proof of payment images.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
