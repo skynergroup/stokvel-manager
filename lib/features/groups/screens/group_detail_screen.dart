@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/models/contribution.dart';
 import '../../../shared/models/member.dart';
 import '../../../shared/models/stokvel.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -13,6 +14,7 @@ import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/stokvel_type_chip.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../contributions/providers/contribution_provider.dart';
 import '../providers/groups_provider.dart';
 import '../services/invite_service.dart';
 
@@ -361,71 +363,105 @@ class _MembersTab extends ConsumerWidget {
   }
 }
 
-class _ContributionsTab extends StatelessWidget {
+/// Real Firestore-backed contributions tab.
+class _ContributionsTab extends ConsumerWidget {
   final String groupId;
   const _ContributionsTab({required this.groupId});
 
   @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text('February 2026',
-            style: Theme.of(context).textTheme.titleLarge),
-        const Gap(8),
-        _ContributionRow(name: 'Nomsa M.', amount: 500, isPaid: true),
-        _ContributionRow(name: 'Sipho S.', amount: 500, isPaid: true),
-        _ContributionRow(name: 'Thabo M.', amount: 500, isPaid: true),
-        _ContributionRow(name: 'Lerato K.', amount: 500, isPending: true),
-        _ContributionRow(name: 'Bongani D.', amount: 500, isLate: true),
-        const Gap(8),
-        Text(
-          '3/5 paid \u00b7 R1,500',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const Gap(24),
-        Text('January 2026',
-            style: Theme.of(context).textTheme.titleLarge),
-        const Gap(8),
-        AppCard(
-          child: Row(
-            children: [
-              const Icon(Icons.check_circle,
-                  color: AppColors.success, size: 20),
-              const Gap(8),
-              const Text('All 5 paid'),
-              const Spacer(),
-              const Text('Total: R2,500'),
-            ],
-          ),
-        ),
-        const Gap(24),
-        AppButton(
-          label: 'Record Payment',
-          onPressed: () => context.pushNamed(
-            RouteNames.recordContribution,
-            pathParameters: {'groupId': groupId},
-          ),
-          icon: Icons.add,
-        ),
-      ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final contribsAsync = ref.watch(groupedContributionsProvider(groupId));
+    final currencyFormat =
+        NumberFormat.currency(locale: 'en_ZA', symbol: 'R', decimalDigits: 0);
+
+    return contribsAsync.when(
+      loading: () => const Center(child: LoadingIndicator()),
+      error: (error, _) => Center(child: Text('Error: $error')),
+      data: (grouped) {
+        // Sort month keys descending (most recent first)
+        final sortedKeys = grouped.keys.toList()
+          ..sort((a, b) => b.compareTo(a));
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            ...sortedKeys.map((monthKey) {
+              final contributions = grouped[monthKey]!;
+              final parts = monthKey.split('-');
+              final year = int.parse(parts[0]);
+              final month = int.parse(parts[1]);
+              final monthLabel =
+                  DateFormat('MMMM yyyy').format(DateTime(year, month));
+
+              // Count statuses
+              final paidCount = contributions
+                  .where((c) => c.status == ContributionStatus.paid)
+                  .length;
+              final totalAmount = contributions.fold<double>(
+                  0, (sum, c) => c.status == ContributionStatus.paid ? sum + c.amount : sum);
+              final allPaid =
+                  paidCount == contributions.length && contributions.isNotEmpty;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(monthLabel,
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const Gap(8),
+                  if (allPaid && contributions.isNotEmpty)
+                    AppCard(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle,
+                              color: AppColors.success, size: 20),
+                          const Gap(8),
+                          Text('All ${contributions.length} paid'),
+                          const Spacer(),
+                          Text(
+                              'Total: ${currencyFormat.format(totalAmount)}'),
+                        ],
+                      ),
+                    )
+                  else ...[
+                    ...contributions.map((c) => _ContributionRow(
+                          contribution: c,
+                          groupId: groupId,
+                        )),
+                  ],
+                  const Gap(4),
+                  if (!allPaid)
+                    Text(
+                      '$paidCount/${contributions.length} paid \u00b7 ${currencyFormat.format(totalAmount)}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  const Gap(24),
+                ],
+              );
+            }),
+
+            // Record payment button
+            AppButton(
+              label: 'Record Payment',
+              onPressed: () => context.pushNamed(
+                RouteNames.recordContribution,
+                pathParameters: {'groupId': groupId},
+              ),
+              icon: Icons.add,
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
 class _ContributionRow extends StatelessWidget {
-  final String name;
-  final double amount;
-  final bool isPaid;
-  final bool isPending;
-  final bool isLate;
+  final Contribution contribution;
+  final String groupId;
 
   const _ContributionRow({
-    required this.name,
-    required this.amount,
-    this.isPaid = false,
-    this.isPending = false,
-    this.isLate = false,
+    required this.contribution,
+    required this.groupId,
   });
 
   @override
@@ -437,40 +473,54 @@ class _ContributionRow extends StatelessWidget {
     Color color;
     String status;
 
-    if (isPaid) {
-      icon = Icons.check_circle;
-      color = AppColors.success;
-      status = '';
-    } else if (isLate) {
-      icon = Icons.cancel;
-      color = AppColors.error;
-      status = 'LATE';
-    } else {
-      icon = Icons.schedule;
-      color = AppColors.warning;
-      status = 'DUE';
+    switch (contribution.status) {
+      case ContributionStatus.paid:
+        icon = Icons.check_circle;
+        color = AppColors.success;
+        status = '';
+      case ContributionStatus.late_:
+        icon = Icons.cancel;
+        color = AppColors.error;
+        status = 'LATE';
+      case ContributionStatus.excused:
+        icon = Icons.info;
+        color = AppColors.info;
+        status = 'EXCUSED';
+      case ContributionStatus.pending:
+        icon = Icons.schedule;
+        color = AppColors.warning;
+        status = 'DUE';
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const Gap(12),
-          Expanded(child: Text(name)),
-          Text(currencyFormat.format(amount)),
-          if (status.isNotEmpty) ...[
-            const Gap(8),
-            Text(
-              status,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+    return InkWell(
+      onTap: () => context.pushNamed(
+        RouteNames.contributionDetail,
+        pathParameters: {
+          'groupId': groupId,
+          'contribId': contribution.id,
+        },
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const Gap(12),
+            Expanded(child: Text(contribution.memberName)),
+            Text(currencyFormat.format(contribution.amount)),
+            if (status.isNotEmpty) ...[
+              const Gap(8),
+              Text(
+                status,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/otp_screen.dart';
 import '../../features/auth/screens/phone_auth_screen.dart';
 import '../../features/auth/screens/profile_setup_screen.dart';
+import '../../features/contributions/screens/contribution_detail_screen.dart';
 import '../../features/contributions/screens/record_contribution_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/groups/screens/create_group_screen.dart';
@@ -133,6 +134,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: RouteNames.recordContribution,
         builder: (context, state) => RecordContributionScreen(
           groupId: state.pathParameters['groupId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/contribution-detail/:groupId/:contribId',
+        name: RouteNames.contributionDetail,
+        builder: (context, state) => ContributionDetailScreen(
+          groupId: state.pathParameters['groupId']!,
+          contribId: state.pathParameters['contribId']!,
         ),
       ),
       GoRoute(
