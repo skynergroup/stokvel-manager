@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../auth/providers/auth_provider.dart';
 import '../../groups/providers/groups_provider.dart';
+import '../../meetings/providers/meeting_provider.dart';
+import '../../payouts/providers/payout_provider.dart';
 
 class DashboardData {
   final String userName;
@@ -59,6 +62,40 @@ final dashboardDataProvider = Provider<DashboardData>((ref) {
     nextGroup = stokvels.first.name;
   }
 
+  // Next payout from real data
+  double nextPayoutAmount = 0;
+  String nextPayoutGroup = '';
+  final userPayouts = ref.watch(userPayoutsProvider).valueOrNull ?? [];
+  if (userPayouts.isNotEmpty) {
+    final scheduled = userPayouts.where(
+        (p) => p.payout.status.name == 'scheduled' ||
+            p.payout.status.name == 'approved');
+    if (scheduled.isNotEmpty) {
+      final next = scheduled.first;
+      nextPayoutAmount = next.payout.amount;
+      nextPayoutGroup = next.stokvelName;
+    }
+  }
+  // Fallback to estimate if no real payouts
+  if (nextPayoutGroup.isEmpty && stokvels.isNotEmpty) {
+    nextPayoutAmount =
+        stokvels.first.contributionAmount * stokvels.first.memberCount;
+    nextPayoutGroup = stokvels.first.name;
+  }
+
+  // Next meeting from real data
+  String nextMeetingDate = 'No meetings scheduled';
+  String nextMeetingLocation = '';
+  final upcomingMeetings =
+      ref.watch(upcomingMeetingsProvider).valueOrNull ?? [];
+  if (upcomingMeetings.isNotEmpty) {
+    final next = upcomingMeetings.first;
+    final dateFormat = DateFormat('EEE d MMM, HH:mm');
+    nextMeetingDate = dateFormat.format(next.meeting.date);
+    nextMeetingLocation = next.meeting.locationName ??
+        (next.meeting.isVirtual ? 'Virtual' : '');
+  }
+
   return DashboardData(
     userName: userName,
     totalSavings: totalSavings,
@@ -66,12 +103,10 @@ final dashboardDataProvider = Provider<DashboardData>((ref) {
     nextContributionAmount: nextAmount,
     nextContributionDays: nextDays,
     nextContributionGroup: nextGroup,
-    nextPayoutAmount: stokvels.isNotEmpty
-        ? stokvels.first.contributionAmount * stokvels.first.memberCount
-        : 0,
-    nextPayoutGroup: stokvels.isNotEmpty ? stokvels.first.name : '',
-    nextMeetingDate: 'No meetings scheduled',
-    nextMeetingLocation: '',
+    nextPayoutAmount: nextPayoutAmount,
+    nextPayoutGroup: nextPayoutGroup,
+    nextMeetingDate: nextMeetingDate,
+    nextMeetingLocation: nextMeetingLocation,
     recentActivity: const [],
   );
 });

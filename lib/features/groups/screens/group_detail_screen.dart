@@ -8,6 +8,7 @@ import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/contribution.dart';
 import '../../../shared/models/member.dart';
+import '../../../shared/models/payout.dart';
 import '../../../shared/models/stokvel.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -15,6 +16,7 @@ import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/stokvel_type_chip.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../contributions/providers/contribution_provider.dart';
+import '../../payouts/providers/payout_provider.dart';
 import '../providers/groups_provider.dart';
 import '../services/invite_service.dart';
 
@@ -526,77 +528,177 @@ class _ContributionRow extends StatelessWidget {
   }
 }
 
-class _PayoutsTab extends StatelessWidget {
+class _PayoutsTab extends ConsumerWidget {
   final String groupId;
   const _PayoutsTab({required this.groupId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final payoutsAsync = ref.watch(payoutScheduleProvider(groupId));
+    final groupAsync = ref.watch(stokvelDetailProvider(groupId));
+    final authState = ref.watch(authStateProvider);
+    final actionState = ref.watch(payoutActionProvider);
     final currencyFormat =
         NumberFormat.currency(locale: 'en_ZA', symbol: 'R', decimalDigits: 0);
+    final dateFormat = DateFormat('MMM');
+    final isBurial = groupAsync.valueOrNull?.type == StokvelType.burial;
+    final currentUserId = authState.user?.uid;
 
-    final payouts = [
-      ('Jan', 'Nomsa M.', true, false),
-      ('Feb', 'Sipho S.', true, false),
-      ('Mar', 'Thabo M.', false, true),
-      ('Apr', 'Lerato K.', false, false),
-      ('May', 'Bongani D.', false, false),
-    ];
+    return payoutsAsync.when(
+      loading: () => const Center(child: LoadingIndicator()),
+      error: (error, _) => Center(child: Text('Error: $error')),
+      data: (payouts) {
+        // Determine which payout is "current" (first scheduled)
+        Payout? currentPayout;
+        for (final p in payouts) {
+          if (p.status == PayoutStatus.scheduled) {
+            currentPayout = p;
+            break;
+          }
+        }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text('Rotation Schedule',
-            style: Theme.of(context).textTheme.titleLarge),
-        const Gap(12),
-        ...payouts.map((p) {
-          final isPaid = p.$3;
-          final isCurrent = p.$4;
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 40,
-                  child: Text(
-                    p.$1,
-                    style: Theme.of(context).textTheme.labelMedium,
-                  ),
-                ),
-                Icon(
-                  isPaid
-                      ? Icons.check_circle
-                      : isCurrent
-                          ? Icons.play_arrow
-                          : Icons.radio_button_unchecked,
-                  color: isPaid
-                      ? AppColors.success
-                      : isCurrent
-                          ? AppColors.primary
-                          : AppColors.textSecondaryLight,
-                  size: 20,
-                ),
-                const Gap(12),
-                Expanded(
-                  child: Text(
-                    isCurrent ? p.$2.toUpperCase() : p.$2,
-                    style: isCurrent
-                        ? Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
-                            )
-                        : Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                if (isPaid) Text(currencyFormat.format(2500)),
-              ],
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              isBurial ? 'Claims' : 'Rotation Schedule',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-          );
-        }),
-      ],
+            const Gap(12),
+            if (payouts.isEmpty)
+              Center(
+                child: Column(
+                  children: [
+                    const Gap(24),
+                    Icon(Icons.event_note_outlined,
+                        size: 48, color: AppColors.textSecondaryLight),
+                    const Gap(8),
+                    Text(
+                      isBurial
+                          ? 'No claims yet'
+                          : 'No payout schedule generated',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondaryLight,
+                          ),
+                    ),
+                    const Gap(16),
+                    if (!isBurial)
+                      AppButton(
+                        label: 'Generate Schedule',
+                        variant: AppButtonVariant.outline,
+                        isLoading: actionState.isLoading,
+                        onPressed: () => ref
+                            .read(payoutActionProvider.notifier)
+                            .generateSchedule(groupId),
+                        icon: Icons.auto_fix_high,
+                      ),
+                  ],
+                ),
+              )
+            else
+              ...payouts.map((payout) {
+                final isPaid = payout.status == PayoutStatus.paid;
+                final isCurrent = payout.id == currentPayout?.id;
+                return InkWell(
+                  onTap: () => context.pushNamed(
+                    RouteNames.payoutDetail,
+                    pathParameters: {
+                      'groupId': groupId,
+                      'payoutId': payout.id,
+                    },
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 40,
+                          child: Text(
+                            dateFormat.format(payout.payoutDate),
+                            style: Theme.of(context).textTheme.labelMedium,
+                          ),
+                        ),
+                        Container(
+                          width: 2,
+                          height: 32,
+                          color: isPaid
+                              ? AppColors.success
+                              : isCurrent
+                                  ? AppColors.primary
+                                  : AppColors.divider,
+                        ),
+                        const Gap(12),
+                        Icon(
+                          isPaid
+                              ? Icons.check_circle
+                              : isCurrent
+                                  ? Icons.play_circle_filled
+                                  : Icons.radio_button_unchecked,
+                          color: isPaid
+                              ? AppColors.success
+                              : isCurrent
+                                  ? AppColors.primary
+                                  : AppColors.textSecondaryLight,
+                          size: 20,
+                        ),
+                        const Gap(8),
+                        Expanded(
+                          child: Text(
+                            isCurrent
+                                ? payout.recipientName.toUpperCase()
+                                : payout.recipientName,
+                            style: isCurrent
+                                ? Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                    )
+                                : Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                        if (isPaid)
+                          Text(
+                            currencyFormat.format(payout.amount),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            const Gap(24),
+            if (isBurial && currentUserId != null)
+              AppButton(
+                label: 'Request Payout',
+                onPressed: () async {
+                  final members =
+                      ref.read(stokvelMembersProvider(groupId)).valueOrNull ??
+                          [];
+                  final me = members
+                      .where((m) => m.userId == currentUserId)
+                      .toList();
+                  if (me.isEmpty) return;
+                  await ref.read(payoutActionProvider.notifier).requestPayout(
+                        stokvelId: groupId,
+                        recipientId: currentUserId,
+                        recipientName: me.first.displayName,
+                        amount: 0,
+                        type: PayoutType.burialClaim,
+                        notes: 'Burial claim request',
+                      );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Payout requested')),
+                    );
+                  }
+                },
+                icon: Icons.request_page,
+              ),
+          ],
+        );
+      },
     );
   }
 }
