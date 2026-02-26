@@ -1,4 +1,4 @@
-# StokvelManager — Project Plan
+# StokvelManager — Project Plan v2
 
 > Digitize contributions, payouts, and meeting scheduling for South Africa's R50B+ stokvel economy.
 
@@ -10,433 +10,1147 @@
 - **11.6 million** South Africans participate in stokvels
 - **~800,000** active stokvel groups (NASASA estimate)
 - **R50 billion+** circulates annually — mostly tracked on paper and WhatsApp
-- Stokvel types by share: 60% investment, 18% savings, 22% grocery/burial (StokFella founder data)
-- Younger demographics (25-40) increasingly joining for property, holidays, weddings — not just groceries
+- Stokvel types by share: 60% investment, 18% savings, 22% grocery/burial
+- Younger demographics (25-40) increasingly joining for property, holidays, weddings
 - FNB services 120,000 stokvels but only offers bank accounts, not the governance/social layer
 
 ### Competitive Landscape
 
 | Player | What They Do | Weakness |
 |--------|-------------|----------|
-| **StokFella** | Most established digital stokvel app. FSP-licensed. Retail voucher payouts. MTN Business App of the Year winner. | iOS app last updated 2021. Only 3 App Store reviews. Feels enterprise/corporate — not community-native. Tries to be a financial institution, not a tool. |
-| **FNB Stokvel Accounts** | Digital account opening (Feb 2026). 120K groups. | Just a bank account — no contribution tracking, no governance, no social features. Three signatories required. |
-| **Nedbank Stokvel** | Stokvel-specific savings. Grocery discount partnerships. | Same as FNB — banking layer only, no management tooling. |
-| **Imbewu Stokvest** | Investment-focused stokvel app. | Niche — targets investors, ignores 40% of market (burial/grocery/savings). |
-| **WhatsApp Groups** | The actual incumbent. Every stokvel has one. | Zero financial tracking. No payout automation. Trust issues (admins disappear with money). No audit trail. |
+| **StokFella** | Most established digital stokvel app. FSP-licensed. | iOS app last updated 2021. Only 3 App Store reviews. Over-financialized. |
+| **FNB Stokvel Accounts** | Digital account opening (Feb 2026). 120K groups. | Just a bank account — no contribution tracking, no governance. |
+| **WhatsApp Groups** | The actual incumbent. Every stokvel has one. | Zero financial tracking. No automation. Trust issues. |
 
 ### The Gap
-Nobody owns the **management layer**. Banks provide accounts. StokFella tried but over-financialized it. WhatsApp is where the activity happens but has zero tooling. The winner builds a WhatsApp-native management tool that's dead simple.
+Nobody owns the **management layer**. Banks provide accounts. StokFella over-engineered. WhatsApp is where stokvels live but has zero tooling. The winner builds a WhatsApp-native management tool that's dead simple.
 
 ---
 
-## 2. Stokvel Types We Must Support (MVP)
+## 2. Product Channels
 
-| Type | How It Works | % of Market |
-|------|-------------|-------------|
-| **Rotational/Savings** | Fixed monthly contribution; one member gets the full pot each cycle | ~60% |
-| **Burial Society** | Monthly contribution; pays out on death/bereavement of member or family | ~12% |
-| **Grocery** | Monthly contribution; bulk grocery purchase at year-end (Nov-Dec) | ~10% |
-| **Investment** | Pooled funds invested (property, franchise, money market) | Growing |
-| **Hybrid** | Combination (e.g., rotational + burial fund) | Common |
+### Two entry points, one system:
 
----
+1. **Mobile App** (Flutter — iOS + Android)
+   - Full-featured management interface
+   - For chairpersons, treasurers, and engaged members
+   - Rich dashboards, forms, reports
 
-## 3. Product Vision
+2. **WhatsApp Bot** (added to existing stokvel groups)
+   - The bot joins the group's existing WhatsApp chat
+   - Members interact via natural commands: "pay", "balance", "next meeting"
+   - Bot posts automatic updates: contribution reminders, payout notifications, meeting summaries
+   - Zero app download required for basic participation
+   - Syncs bidirectionally with the mobile app via Firebase
 
-### Core Thesis
-**StokvelManager is the operating system for stokvels.** Not a bank. Not an investment platform. A management tool that makes the treasurer's job easy and gives every member transparency.
-
-### Design Principles
-1. **WhatsApp-first** — stokvels live on WhatsApp. Meet them there.
-2. **Offline-tolerant** — not everyone has data all the time
-3. **Multilingual** — isiZulu, isiXhosa, Sesotho, English minimum at launch
-4. **Trust through transparency** — every rand tracked, every member can verify
-5. **Simple enough for gogos, powerful enough for investment clubs**
+### NOT supported:
+- ~~USSD / feature phones~~ — out of scope
+- ~~Web dashboard~~ — mobile app + WhatsApp covers all use cases
 
 ---
 
-## 4. Feature Specification
+## 3. Stokvel Types Supported
 
-### Phase 1 — MVP (8-10 weeks)
-
-#### 4.1 Group Management
-- Create stokvel group (name, type, constitution upload)
-- Invite members via WhatsApp share link or QR code
-- Role assignment: Chairperson, Treasurer, Secretary, Member
-- Group constitution template generator (pre-filled by type)
-- Member directory with contact info
-
-#### 4.2 Contribution Tracking
-- Define contribution schedule (weekly/monthly/custom)
-- Record contributions (manual entry + proof of payment upload)
-- Automated reminders via push notification + WhatsApp
-- Dashboard: who's paid, who owes, running total
-- Late payment flagging with configurable grace period
-- Receipt generation (PDF) for each contribution
-
-#### 4.3 Payout Management
-- **Rotational:** Auto-calculate rotation order, next recipient display
-- **Burial:** Claim submission flow (death certificate upload, beneficiary selection)
-- **Grocery:** Year-end pool calculation, shopping list builder
-- Payout history with full audit trail
-- Member vote on payout disputes (in-app polling)
-
-#### 4.4 Meeting Scheduler
-- Schedule meetings (physical or virtual)
-- Location pin (Google Maps integration)
-- RSVP tracking
-- Minutes recording (text or voice note)
-- Action item assignment with due dates
-
-#### 4.5 Communication
-- In-app announcements (Chairperson → group)
-- WhatsApp Business API integration for notifications
-- Push notifications for contributions due, meetings, payouts
-
-#### 4.6 Dashboard & Reporting
-- Group financial overview (total collected, distributed, balance)
-- Individual member statement
-- Monthly/annual reports (downloadable PDF)
-- Visual charts (contribution trends, member compliance)
-
-### Phase 2 — Growth (post-MVP)
-
-- **Bank integration** — Link to FNB/Nedbank/Capitec stokvel accounts for auto-reconciliation
-- **USSD channel** — For feature phone users (`*120*STOKVEL#`)
-- **Digital voting** — Constitutional amendments, new member approval, emergency payouts
-- **Marketplace** — Bulk grocery deals, funeral service providers, investment products
-- **NASASA registration** — In-app NASASA membership application
-- **Loan/advance facility** — Member can request early payout (group votes)
-- **Multi-currency** — Diaspora stokvels (UK, US-based SA communities)
-
-### Phase 3 — Monetization & Scale
-
-- **Premium tiers** — Free for ≤10 members; paid for larger groups or advanced features
-- **Transaction fees** — Small % on in-app payments (if holding float)
-- **Affiliate revenue** — Grocery partners, funeral services, investment products
-- **Data insights** — Anonymized, aggregated stokvel economy data (for banks, researchers)
-- **White-label** — Banks and corporates license the management layer
+| Type | How It Works | Payout Logic |
+|------|-------------|--------------|
+| **Rotational** | Fixed monthly contribution; one member gets the full pot each cycle | Round-robin order, configurable |
+| **Savings** | Fixed monthly contribution; pool accumulates, paid out at year-end | Lump sum split at defined date |
+| **Burial Society** | Monthly contribution; pays out on death/bereavement | Claim-based with proof |
+| **Grocery** | Monthly contribution; bulk grocery purchase Nov-Dec | Year-end pooled purchase |
+| **Investment** | Pooled funds invested (property, franchise, money market) | Returns distributed proportionally |
+| **Hybrid** | Any combination of the above | Configurable per fund |
 
 ---
 
-## 5. Technical Architecture
+## 4. Technical Architecture
 
-### 5.1 Stack Decision
+### Stack
 
 | Layer | Choice | Rationale |
 |-------|--------|-----------|
-| **Mobile** | Flutter | Cross-platform (Android + iOS). Strong in SA dev community. Offline-first with Hive/Isar. Already have skills installed. |
-| **Backend** | Supabase (PostgreSQL + Auth + Realtime + Storage) | Fast to ship. Row-level security for multi-tenant stokvel data. Realtime subscriptions for live dashboards. Auth with phone OTP (critical for SA market). |
-| **Notifications** | Firebase Cloud Messaging + WhatsApp Business API | FCM for push; WhatsApp for the primary channel where stokvels live |
-| **Payments** | Ozow / PayFast / Stitch (phase 2) | SA-native payment gateways. EFT, card, instant pay. No float-holding in MVP — just tracking. |
-| **Hosting** | Supabase Cloud (MVP) → self-hosted or AWS Cape Town (scale) | Zero ops at start. AWS af-south-1 for data residency later. |
-| **CI/CD** | GitHub Actions → Codemagic (iOS builds) | Standard Flutter pipeline. Codemagic handles Apple signing without a Mac. |
+| **Mobile** | Flutter | Cross-platform. Offline-capable. Skills installed. |
+| **Backend** | Firebase (Firestore + Auth + Cloud Functions + Storage + FCM) | Free Spark tier covers MVP easily. Google Cloud CLI already configured. |
+| **WhatsApp Bot** | Cloud Functions + WhatsApp Business Cloud API (Meta) | Serverless. Triggers on incoming messages. Posts updates to groups. |
+| **Payments** | Track-only (MVP). Ozow/PayFast integration Phase 2. | No money movement = no FSP license needed. |
+| **CI/CD** | GitHub Actions + Codemagic (iOS) | Standard Flutter pipeline. |
 
-### 5.2 Architecture Diagram
+### Why Firebase over Supabase
+- **Free tier** — Firestore (1GB storage, 50K reads/day, 20K writes/day), Auth (phone OTP free), Cloud Functions (125K invocations/month), Storage (5GB), FCM (unlimited)
+- **Phone OTP built-in** — critical for SA market, no third-party SMS provider needed
+- **Cloud Functions** — perfect for WhatsApp bot webhook handlers
+- **Offline-first** — Firestore has built-in offline persistence (crucial for data-conscious SA users)
+- **Already configured** — Google Cloud CLI installed for Nexus
+
+### Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    CLIENTS                           │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────────┐ │
-│  │ Flutter   │  │ Flutter   │  │ WhatsApp Business │ │
-│  │ Android   │  │ iOS       │  │ API (Chatbot)     │ │
-│  └─────┬─────┘  └─────┬─────┘  └────────┬──────────┘ │
-│        │              │                  │           │
-└────────┼──────────────┼──────────────────┼───────────┘
-         │              │                  │
-         ▼              ▼                  ▼
-┌─────────────────────────────────────────────────────┐
-│                  SUPABASE                            │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│  │ Auth      │  │ Realtime │  │ Edge Functions   │  │
-│  │ (Phone    │  │ (Live    │  │ (Business logic, │  │
-│  │  OTP)     │  │  updates)│  │  WhatsApp hooks) │  │
-│  └──────────┘  └──────────┘  └──────────────────┘  │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│  │ PostgreSQL│  │ Storage  │  │ Cron (Reminders, │  │
-│  │ (RLS)    │  │ (Docs,   │  │  Reports, Payout │  │
-│  │          │  │  Photos)  │  │  Scheduling)     │  │
-│  └──────────┘  └──────────┘  └──────────────────┘  │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-         │                          │
-         ▼                          ▼
-┌──────────────┐          ┌──────────────────┐
-│ Firebase FCM │          │ WhatsApp Cloud   │
-│ (Push)       │          │ API (Meta)       │
-└──────────────┘          └──────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                      CLIENTS                             │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌────────────────────────┐│
+│  │ Flutter   │  │ Flutter   │  │ WhatsApp Bot           ││
+│  │ Android   │  │ iOS       │  │ (in stokvel groups)    ││
+│  └─────┬─────┘  └─────┬─────┘  └───────────┬────────────┘│
+└────────┼──────────────┼─────────────────────┼─────────────┘
+         │              │                     │
+         ▼              ▼                     ▼
+┌─────────────────────────────────────────────────────────┐
+│                     FIREBASE                             │
+│                                                         │
+│  ┌──────────────┐  ┌───────────────┐  ┌──────────────┐ │
+│  │ Auth          │  │ Firestore     │  │ Cloud        │ │
+│  │ (Phone OTP)   │  │ (All data,   │  │ Functions    │ │
+│  │               │  │  offline sync)│  │ (Bot logic,  │ │
+│  │               │  │              │  │  reminders,   │ │
+│  │               │  │              │  │  webhooks)    │ │
+│  └──────────────┘  └───────────────┘  └──────────────┘ │
+│                                                         │
+│  ┌──────────────┐  ┌───────────────┐  ┌──────────────┐ │
+│  │ Cloud Storage │  │ FCM           │  │ Firestore    │ │
+│  │ (Proof of    │  │ (Push notifs) │  │ Security     │ │
+│  │  payment,    │  │               │  │ Rules        │ │
+│  │  docs)       │  │               │  │ (Multi-      │ │
+│  │              │  │               │  │  tenancy)    │ │
+│  └──────────────┘  └───────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────┘
+         │                                    │
+         ▼                                    ▼
+┌──────────────────┐              ┌───────────────────────┐
+│ WhatsApp Cloud   │              │ Ozow / PayFast        │
+│ API (Meta)       │              │ (Phase 2 — payments)  │
+└──────────────────┘              └───────────────────────┘
 ```
 
-### 5.3 Data Model (Core)
+### Firestore Data Model
 
-```sql
--- Organizations
-stokvels (
-  id uuid PK,
-  name text,
-  type enum(rotational, burial, grocery, investment, hybrid),
-  constitution_url text,        -- Supabase storage
-  contribution_amount decimal,
-  contribution_frequency enum(weekly, biweekly, monthly),
-  currency text DEFAULT 'ZAR',
-  created_at timestamptz,
-  nasasa_registered boolean DEFAULT false
-)
+```
+/stokvels/{stokvelId}
+  name: string
+  type: "rotational" | "savings" | "burial" | "grocery" | "investment" | "hybrid"
+  constitutionUrl: string?
+  contributionAmount: number
+  contributionFrequency: "weekly" | "biweekly" | "monthly"
+  currency: "ZAR"
+  createdBy: string (uid)
+  createdAt: timestamp
+  memberCount: number
+  totalCollected: number
+  whatsappGroupId: string?       // linked WhatsApp group
+  nasasaRegistered: boolean
 
--- Members
-stokvel_members (
-  id uuid PK,
-  stokvel_id uuid FK → stokvels,
-  user_id uuid FK → auth.users,
-  role enum(chairperson, treasurer, secretary, member),
-  rotation_order int,           -- For rotational stokvels
-  joined_at timestamptz,
-  status enum(active, suspended, left)
-)
+  /members/{memberId}
+    userId: string
+    displayName: string
+    phone: string
+    role: "chairperson" | "treasurer" | "secretary" | "member"
+    rotationOrder: number?
+    joinedAt: timestamp
+    status: "active" | "suspended" | "left"
 
--- Contributions
-contributions (
-  id uuid PK,
-  stokvel_id uuid FK,
-  member_id uuid FK → stokvel_members,
-  amount decimal,
-  due_date date,
-  paid_date date,
-  proof_url text,               -- Proof of payment image
-  status enum(pending, paid, late, excused),
-  recorded_by uuid FK           -- Treasurer who verified
-)
+  /contributions/{contributionId}
+    memberId: string
+    memberName: string
+    amount: number
+    dueDate: timestamp
+    paidDate: timestamp?
+    proofUrl: string?
+    status: "pending" | "paid" | "late" | "excused"
+    recordedBy: string
+    createdAt: timestamp
 
--- Payouts
-payouts (
-  id uuid PK,
-  stokvel_id uuid FK,
-  recipient_id uuid FK → stokvel_members,
-  amount decimal,
-  payout_date date,
-  type enum(rotation, burial_claim, grocery, investment_return),
-  status enum(scheduled, approved, paid, disputed),
-  approved_by uuid[],           -- Members who voted yes
-  notes text
-)
+  /payouts/{payoutId}
+    recipientId: string
+    recipientName: string
+    amount: number
+    payoutDate: timestamp
+    type: "rotation" | "burial_claim" | "grocery" | "savings" | "investment_return"
+    status: "scheduled" | "approved" | "paid" | "disputed"
+    approvedBy: string[]
+    notes: string?
+    createdAt: timestamp
 
--- Meetings
-meetings (
-  id uuid PK,
-  stokvel_id uuid FK,
-  title text,
-  date timestamptz,
-  location_name text,
-  location_lat decimal,
-  location_lng decimal,
-  virtual_link text,
-  minutes text,
-  rsvps jsonb                   -- {user_id: 'yes'|'no'|'maybe'}
-)
+  /meetings/{meetingId}
+    title: string
+    date: timestamp
+    locationName: string?
+    locationLat: number?
+    locationLng: number?
+    virtualLink: string?
+    agenda: string?
+    minutes: string?
+    rsvps: map<userId, "yes" | "no" | "maybe">
+    createdBy: string
+    createdAt: timestamp
 
--- Notifications
-notifications (
-  id uuid PK,
-  stokvel_id uuid FK,
-  target_user_id uuid,
-  type enum(contribution_due, payout, meeting, announcement),
-  channel enum(push, whatsapp, in_app),
-  sent_at timestamptz,
-  read_at timestamptz
-)
+/users/{userId}
+  displayName: string
+  phone: string
+  avatarUrl: string?
+  fcmTokens: string[]
+  stokvels: string[]             // stokvelIds for quick lookup
+  createdAt: timestamp
+  settings: {
+    darkMode: boolean
+    language: "en" | "zu" | "xh" | "st"
+    notificationsEnabled: boolean
+  }
+
+/notifications/{notificationId}
+  userId: string
+  stokvelId: string
+  type: "contribution_due" | "contribution_received" | "payout" | "meeting" | "announcement"
+  title: string
+  body: string
+  read: boolean
+  createdAt: timestamp
 ```
 
-### 5.4 Row-Level Security (Multi-Tenancy)
+### Firestore Security Rules (key excerpts)
 
-```sql
--- Members can only see their own stokvels
-CREATE POLICY "members_see_own_stokvel" ON stokvels
-  FOR SELECT USING (
-    id IN (SELECT stokvel_id FROM stokvel_members WHERE user_id = auth.uid())
-  );
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
 
--- Only treasurers can record contributions
-CREATE POLICY "treasurer_records_contributions" ON contributions
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM stokvel_members
-      WHERE stokvel_id = contributions.stokvel_id
-      AND user_id = auth.uid()
-      AND role IN ('treasurer', 'chairperson')
-    )
-  );
+    // Users can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Stokvel — only members can read
+    match /stokvels/{stokvelId} {
+      allow read: if request.auth != null &&
+        exists(/databases/$(database)/documents/stokvels/$(stokvelId)/members/$(request.auth.uid));
+      allow create: if request.auth != null;
+
+      // Members subcollection
+      match /members/{memberId} {
+        allow read: if request.auth != null &&
+          exists(/databases/$(database)/documents/stokvels/$(stokvelId)/members/$(request.auth.uid));
+        allow write: if isChairperson(stokvelId);
+      }
+
+      // Contributions — members read, treasurer/chair write
+      match /contributions/{contribId} {
+        allow read: if isMember(stokvelId);
+        allow create, update: if isTreasurerOrChair(stokvelId);
+      }
+
+      // Payouts — members read, chair manages
+      match /payouts/{payoutId} {
+        allow read: if isMember(stokvelId);
+        allow write: if isChairperson(stokvelId);
+      }
+
+      // Meetings — members read, any officer writes
+      match /meetings/{meetingId} {
+        allow read: if isMember(stokvelId);
+        allow write: if isOfficer(stokvelId);
+      }
+    }
+  }
+}
 ```
 
 ---
 
-## 6. Regulatory & Compliance
+## 5. WhatsApp Bot Architecture
 
-### Key Facts
-- Stokvels are **exempt from the Banks Act** (1990 Reserve Bank exemption) — provided they register with NASASA
-- NASASA regulates 125,000+ groups and 2.5M+ individuals
-- If StokvelManager **does not hold money** (just tracks it), minimal regulatory burden
-- If we **hold float or process payments**: need FSP license (FSCA), FICA compliance, POPIA
+### How It Works
 
-### MVP Strategy
-- **Phase 1: Track only** — no money movement through the platform. Zero regulatory overhead.
-- **Phase 2: Payment integration** — partner with licensed payment providers (Ozow, PayFast). They hold the compliance.
-- **Phase 3: If we hold float** — apply for FSP license, engage compliance counsel.
+1. **Stokvel chairperson** creates group in the app
+2. App generates a **WhatsApp invite link** for the bot
+3. Bot is added to the **existing WhatsApp group**
+4. Bot introduces itself: "Hi! I'm StokvelManager Bot. I'll help track contributions and remind everyone when payments are due."
+5. Members interact via simple commands — no app download needed for basic use
 
-### POPIA (Data Protection)
-- Phone numbers and financial data are personal information
-- Need: privacy policy, consent flows, data retention policy, right to deletion
-- Supabase in EU by default — consider AWS af-south-1 for data residency
+### Bot Commands (in-group)
 
----
+| Command | What It Does | Example |
+|---------|-------------|---------|
+| `pay [amount]` | Log a contribution (member self-reports) | "pay 500" |
+| `balance` | Show group balance + who owes | "balance" |
+| `my balance` | Show individual contribution history | "my balance" |
+| `next payout` | Show who's next in rotation | "next payout" |
+| `next meeting` | Show next scheduled meeting | "next meeting" |
+| `remind` | Trigger contribution reminder to all | "remind" (chair/treasurer only) |
+| `help` | List all commands | "help" |
 
-## 7. Go-to-Market Strategy
+### Automated Bot Messages
 
-### Launch Market
-- **Gauteng first** — highest concentration of stokvels, most digitally active
-- Target: 25-45 age bracket, employed, smartphone users with existing stokvel
+| Trigger | Message |
+|---------|---------|
+| **3 days before contribution due** | "@everyone Reminder: R500 contribution due by Friday 28 Feb. 8/12 members have paid." |
+| **Contribution recorded** | "✅ Thabo paid R500. 9/12 members have now paid for February." |
+| **Payout completed** | "💰 R6,000 payout sent to Nomsa (February rotation). Next: Sipho in March." |
+| **Meeting scheduled** | "📅 Meeting scheduled: Sat 1 March, 10:00 at Mam' Nkosi's house. RSVP by replying YES or NO." |
+| **Weekly summary (Sunday)** | "📊 Weekly update: R4,500 collected this month. 3 members outstanding. Next payout: 28 Feb to Nomsa." |
 
-### Acquisition Channels
-1. **WhatsApp viral loop** — "Your stokvel is using StokvelManager" invite links
-2. **Community activations** — Township events, church groups, taxi ranks
-3. **NASASA partnership** — They register 125K groups. Co-promote.
-4. **Social media** — TikTok/Instagram targeting stokvel culture content
-5. **Referral programme** — Free premium month for every group referred
-
-### Messaging
-- "Stop losing money to dishonest treasurers"
-- "Know exactly where every rand is"
-- "Your stokvel, your rules, your proof"
-
-### KPIs (First 6 Months)
-| Metric | Target |
-|--------|--------|
-| Registered groups | 500 |
-| Active members | 5,000 |
-| Monthly contribution events tracked | 10,000 |
-| Retention (group active after 3 months) | 60% |
-| App Store rating | 4.5+ |
+### Tech Stack for Bot
+- **Webhook receiver:** Firebase Cloud Function (HTTPS trigger)
+- **WhatsApp API:** Meta WhatsApp Business Cloud API (free for first 1000 conversations/month)
+- **State management:** Firestore (same DB as app — single source of truth)
+- **Message templates:** Pre-approved Meta templates for proactive messages
 
 ---
 
-## 8. Monetization Model
+## 6. Screen-by-Screen Specification
 
-### Free Tier (Forever)
-- Up to 15 members per group
-- Contribution tracking
-- Meeting scheduler
-- Basic reports
-- WhatsApp reminders (limited)
-
-### Premium (R49/month per group)
-- Unlimited members
-- Advanced reporting & analytics
-- Bank reconciliation
-- Priority WhatsApp notifications
-- Constitution templates library
-- Voting & polling
-
-### Enterprise (Custom)
-- White-label for banks/corporates
-- API access
-- Bulk group management
-- Dedicated support
-
-### Revenue Projections (Conservative)
-
-| Month | Free Groups | Premium Groups | MRR (ZAR) |
-|-------|------------|----------------|------------|
-| 6 | 400 | 100 | R4,900 |
-| 12 | 1,500 | 500 | R24,500 |
-| 18 | 4,000 | 1,500 | R73,500 |
-| 24 | 8,000 | 3,000 | R147,000 |
+### 6.1 Splash Screen
+```
+┌─────────────────────────┐
+│                         │
+│                         │
+│       [App Logo]        │
+│     StokvelManager      │
+│                         │
+│     [Loading spinner]   │
+│                         │
+│                         │
+└─────────────────────────┘
+```
+- Auto-routes: → Onboarding (first launch) or → Home (returning user)
+- Duration: 2 seconds or until auth check completes
 
 ---
 
-## 9. Development Roadmap
+### 6.2 Onboarding (3 pages — PageView with dots)
 
-### Sprint 0 — Foundation (Week 1-2)
+**Page 1: "Track Every Rand"**
+```
+┌─────────────────────────┐
+│                         │
+│    [Illustration:       │
+│     coins flowing       │
+│     into a jar]         │
+│                         │
+│  Track Every Rand       │
+│  See exactly who paid,  │
+│  who owes, and where    │
+│  every cent goes.       │
+│                         │
+│        ● ○ ○            │
+│                         │
+│  [Skip]     [Next →]    │
+└─────────────────────────┘
+```
+
+**Page 2: "Never Miss a Payout"**
+```
+┌─────────────────────────┐
+│                         │
+│    [Illustration:       │
+│     calendar with       │
+│     money icons]        │
+│                         │
+│  Never Miss a Payout    │
+│  Automatic rotation     │
+│  scheduling and         │
+│  reminders for every    │
+│  member.                │
+│                         │
+│        ○ ● ○            │
+│                         │
+│  [Skip]     [Next →]    │
+└─────────────────────────┘
+```
+
+**Page 3: "Your Group, Connected"**
+```
+┌─────────────────────────┐
+│                         │
+│    [Illustration:       │
+│     people in circle    │
+│     with phone]         │
+│                         │
+│  Your Group, Connected  │
+│  WhatsApp reminders,    │
+│  meeting scheduling,    │
+│  and transparent        │
+│  records for everyone.  │
+│                         │
+│        ○ ○ ●            │
+│                         │
+│     [Get Started →]     │
+└─────────────────────────┘
+```
+
+- **Flow:** Swipe or tap Next → final page shows "Get Started" → navigates to Auth
+- **Skip** button on pages 1-2 jumps to Auth
+- Only shown on first launch (persisted in SharedPreferences)
+
+---
+
+### 6.3 Auth — Phone Number Screen
+```
+┌─────────────────────────┐
+│  ←                      │
+│                         │
+│  Welcome to             │
+│  StokvelManager         │
+│                         │
+│  Enter your phone       │
+│  number to get started  │
+│                         │
+│  ┌───┬─────────────────┐│
+│  │+27│ 82 123 4567     ││
+│  └───┴─────────────────┘│
+│                         │
+│  We'll send you a       │
+│  one-time code via SMS  │
+│                         │
+│  [    Continue    ]     │
+│                         │
+│  By continuing you      │
+│  agree to our Terms     │
+│  and Privacy Policy     │
+└─────────────────────────┘
+```
+
+- **Country code** fixed to +27 (SA) with flag icon, expandable for other countries later
+- **Phone input** auto-formats as user types (XX XXX XXXX)
+- **Validation:** must be 9 digits after country code
+- **Continue** → triggers Firebase phone OTP → navigates to OTP screen
+- **Terms/Privacy** links open in-app webview
+
+---
+
+### 6.4 Auth — OTP Verification Screen
+```
+┌─────────────────────────┐
+│  ←                      │
+│                         │
+│  Verify your number     │
+│                         │
+│  Enter the 6-digit      │
+│  code sent to           │
+│  +27 82 123 4567        │
+│                         │
+│  ┌──┐┌──┐┌──┐┌──┐┌──┐┌──┐
+│  │ 4││ 8││ 2││ 1││  ││  │
+│  └──┘└──┘└──┘└──┘└──┘└──┘
+│                         │
+│  Didn't receive code?   │
+│  [Resend in 0:42]       │
+│                         │
+│  [    Verify     ]      │
+│                         │
+└─────────────────────────┘
+```
+
+- **6 individual boxes** — auto-advance on digit entry, auto-submit when 6th digit entered
+- **Resend timer:** 60 second countdown, then "Resend Code" becomes tappable
+- **Auto-verify:** Firebase can auto-detect SMS on Android
+- **On success:** → Profile Setup (new user) or → Home (returning user)
+
+---
+
+### 6.5 Profile Setup (new users only)
+```
+┌─────────────────────────┐
+│                         │
+│  Set up your profile    │
+│                         │
+│      [Avatar circle]    │
+│      [Tap to add photo] │
+│                         │
+│  Full Name              │
+│  ┌─────────────────────┐│
+│  │ Thabo Molefe        ││
+│  └─────────────────────┘│
+│                         │
+│  Preferred Language     │
+│  ┌─────────────────────┐│
+│  │ English          ▼  ││
+│  └─────────────────────┘│
+│  (English, isiZulu,     │
+│   isiXhosa, Sesotho)   │
+│                         │
+│  [   Save & Continue  ] │
+└─────────────────────────┘
+```
+
+- **Avatar:** Optional. Camera or gallery picker.
+- **Name:** Required. Used across the app and in WhatsApp bot messages.
+- **Language:** Sets app language + WhatsApp bot message language for this user.
+
+---
+
+### 6.6 Home — Bottom Navigation (4 tabs)
+```
+┌─────────────────────────┐
+│  StokvelManager    [🔔] │
+│─────────────────────────│
+│                         │
+│  [Active tab content]   │
+│                         │
+│                         │
+│                         │
+│                         │
+│                         │
+│─────────────────────────│
+│  🏠      👥     💰    👤│
+│ Home   Groups  Money Profile│
+└─────────────────────────┘
+```
+
+- **Bell icon** top-right → Notifications screen
+- **4 tabs:** Home (dashboard), Groups (my stokvels), Money (contributions/payouts), Profile
+
+---
+
+### 6.7 Home Tab — Dashboard
+```
+┌─────────────────────────┐
+│  StokvelManager    [🔔] │
+│─────────────────────────│
+│                         │
+│  Good morning, Thabo 👋 │
+│                         │
+│  ┌─────────────────────┐│
+│  │ 💰 Total Savings    ││
+│  │    R12,400           ││
+│  │    Across 2 groups   ││
+│  └─────────────────────┘│
+│                         │
+│  ┌─────────────────────┐│
+│  │ 📅 Next Contribution ││
+│  │    R500 due in 3 days││
+│  │    → Umoja Savings   ││
+│  └─────────────────────┘│
+│                         │
+│  ┌─────────────────────┐│
+│  │ 🎯 Next Payout      ││
+│  │    Your turn! R6,000 ││
+│  │    → Umoja Savings   ││
+│  └─────────────────────┘│
+│                         │
+│  ┌─────────────────────┐│
+│  │ 📍 Next Meeting     ││
+│  │    Sat 1 Mar, 10:00 ││
+│  │    Mam' Nkosi's     ││
+│  └─────────────────────┘│
+│                         │
+│  Recent Activity        │
+│  ├ Nomsa paid R500  2h  │
+│  ├ Meeting set     12h  │
+│  └ Sipho paid R500  1d  │
+│                         │
+│─────────────────────────│
+│  🏠      👥     💰    👤│
+└─────────────────────────┘
+```
+
+- **Greeting** changes by time of day (Good morning/afternoon/evening)
+- **Summary cards** show data across ALL user's stokvels
+- **Next Contribution** card — tappable, navigates to that group's contributions
+- **Next Payout** card — highlighted if it's the user's turn
+- **Next Meeting** card — tappable, shows meeting detail
+- **Recent Activity** — last 5 events across all groups, each tappable
+- **Pull to refresh**
+
+---
+
+### 6.8 Groups Tab — My Groups List
+```
+┌─────────────────────────┐
+│  My Groups         [🔔] │
+│─────────────────────────│
+│                         │
+│  ┌─────────────────────┐│
+│  │ Umoja Savings       ││
+│  │ [Rotational] 12 members│
+│  │ R6,000/month        ││
+│  │ Balance: R48,000    ││
+│  │ Your turn: March    ││
+│  └─────────────────────┘│
+│                         │
+│  ┌─────────────────────┐│
+│  │ Kasi Burial Society ││
+│  │ [Burial] 25 members ││
+│  │ R200/month          ││
+│  │ Balance: R15,000    ││
+│  └─────────────────────┘│
+│                         │
+│  ┌─────────────────────┐│
+│  │ Year-End Grocery    ││
+│  │ [Grocery] 8 members ││
+│  │ R300/month          ││
+│  │ Balance: R7,200     ││
+│  │ Payout: December    ││
+│  └─────────────────────┘│
+│                         │
+│              [+ Create] │
+│─────────────────────────│
+│  🏠      👥     💰    👤│
+└─────────────────────────┘
+```
+
+- **Group cards** show: name, type chip (color-coded), member count, contribution amount, current balance
+- **Type chips:** Rotational=gold, Burial=purple, Grocery=green, Savings=blue, Investment=teal
+- **Tap card** → Group Detail
+- **FAB** (+) → Create Group flow
+- **Empty state:** "You're not in any stokvels yet. Create one or ask your chairperson for an invite link."
+
+---
+
+### 6.9 Group Detail — Tabbed View
+```
+┌─────────────────────────┐
+│  ← Umoja Savings   [⚙] │
+│─────────────────────────│
+│  ┌─────────────────────┐│
+│  │ Balance: R48,000    ││
+│  │ 12 members · R6,000/m│
+│  │ [Rotational]        ││
+│  │ Next payout: Thabo  ││
+│  └─────────────────────┘│
+│                         │
+│  [Overview][Members][💰][📅]│
+│─────────────────────────│
+│                         │
+│  (Tab content below)    │
+│                         │
+└─────────────────────────┘
+```
+
+**Overview tab:**
+- Group stats (total collected, total paid out, months active)
+- Contribution compliance chart (fl_chart — bar chart showing % paid per month)
+- Constitution document link (if uploaded)
+- WhatsApp bot status (connected/not connected)
+
+**Members tab:**
+```
+│  Chairperson            │
+│  ┌─────────────────────┐│
+│  │ 👤 Nomsa M.  [Chair]││
+│  └─────────────────────┘│
+│                         │
+│  Treasurer              │
+│  ┌─────────────────────┐│
+│  │ 👤 Sipho S.  [Treas]││
+│  └─────────────────────┘│
+│                         │
+│  Members                │
+│  ┌─────────────────────┐│
+│  │ 👤 Thabo M. #3      ││
+│  │ 👤 Lerato K. #4     ││
+│  │ 👤 Bongani D. #5    ││
+│  │ ...                  ││
+│  └─────────────────────┘│
+│                         │
+│  [+ Invite Member]      │
+```
+- Role badges (Chair, Treasurer, Secretary)
+- Rotation order number for rotational stokvels
+- Invite button generates WhatsApp share link + QR code
+- Chairperson can tap member → assign role, change order, suspend
+
+**Contributions tab:**
+```
+│  February 2026          │
+│  ┌─────────────────────┐│
+│  │ ✅ Nomsa    R500    ││
+│  │ ✅ Sipho    R500    ││
+│  │ ✅ Thabo    R500    ││
+│  │ ⏳ Lerato   R500 DUE││
+│  │ ❌ Bongani  R500 LATE│
+│  │ ...                  ││
+│  └─────────────────────┘│
+│  8/12 paid · R4,000     │
+│                         │
+│  January 2026           │
+│  ┌─────────────────────┐│
+│  │ ✅ All 12 paid      ││
+│  │ Total: R6,000       ││
+│  └─────────────────────┘│
+│                         │
+│  [+ Record Payment]     │
+```
+- Grouped by month, most recent first
+- Status icons: ✅ paid, ⏳ pending, ❌ late
+- **Record Payment** (treasurer/chair only) → Record Contribution Screen
+- Tap on a contribution → detail with proof of payment image
+
+**Payouts tab:**
+```
+│  Rotation Schedule      │
+│  ┌─────────────────────┐│
+│  │ Jan  ✅ Nomsa R6,000││
+│  │ Feb  ✅ Sipho R6,000││
+│  │ Mar  ▶ THABO R6,000 ││
+│  │ Apr  ○ Lerato       ││
+│  │ May  ○ Bongani      ││
+│  │ ...                  ││
+│  └─────────────────────┘│
+│                         │
+│  [Request Payout]       │
+```
+- Visual timeline of rotation order
+- Current month highlighted with arrow
+- Past payouts show ✅ with amount
+- For burial stokvels: shows claims list instead of rotation
+
+---
+
+### 6.10 Create Group Flow (multi-step)
+
+**Step 1: Group Info**
+```
+┌─────────────────────────┐
+│  ← Create Stokvel  1/4 │
+│─────────────────────────│
+│                         │
+│  Group Name             │
+│  ┌─────────────────────┐│
+│  │ Umoja Savings       ││
+│  └─────────────────────┘│
+│                         │
+│  Stokvel Type           │
+│  ┌─────────────────────┐│
+│  │ Rotational       ▼  ││
+│  └─────────────────────┘│
+│                         │
+│  Description (optional) │
+│  ┌─────────────────────┐│
+│  │ Monthly savings club ││
+│  │ for our community   ││
+│  └─────────────────────┘│
+│                         │
+│  [        Next →      ] │
+└─────────────────────────┘
+```
+
+**Step 2: Contribution Setup**
+```
+┌─────────────────────────┐
+│  ← Create Stokvel  2/4 │
+│─────────────────────────│
+│                         │
+│  Contribution Amount    │
+│  ┌──┬──────────────────┐│
+│  │R │ 500              ││
+│  └──┴──────────────────┘│
+│                         │
+│  Frequency              │
+│  [Weekly] [Biweekly]    │
+│  [●Monthly] [Custom]    │
+│                         │
+│  Due Date               │
+│  ┌─────────────────────┐│
+│  │ Last day of month ▼ ││
+│  └─────────────────────┘│
+│                         │
+│  Grace Period           │
+│  ┌─────────────────────┐│
+│  │ 3 days           ▼  ││
+│  └─────────────────────┘│
+│                         │
+│  [        Next →      ] │
+└─────────────────────────┘
+```
+
+**Step 3: Constitution**
+```
+┌─────────────────────────┐
+│  ← Create Stokvel  3/4 │
+│─────────────────────────│
+│                         │
+│  Group Constitution     │
+│                         │
+│  Every stokvel needs    │
+│  rules. Choose how:     │
+│                         │
+│  ┌─────────────────────┐│
+│  │ 📝 Use our template ││
+│  │ Pre-filled based on  ││
+│  │ your stokvel type   ││
+│  └─────────────────────┘│
+│                         │
+│  ┌─────────────────────┐│
+│  │ 📄 Upload your own  ││
+│  │ PDF or photo of your ││
+│  │ existing constitution││
+│  └─────────────────────┘│
+│                         │
+│  ┌─────────────────────┐│
+│  │ ⏭ Skip for now      ││
+│  │ You can add this     ││
+│  │ later in settings   ││
+│  └─────────────────────┘│
+│                         │
+│  [        Next →      ] │
+└─────────────────────────┘
+```
+
+**Step 4: Invite Members**
+```
+┌─────────────────────────┐
+│  ← Create Stokvel  4/4 │
+│─────────────────────────│
+│                         │
+│  Invite Members         │
+│                         │
+│  Share this link with   │
+│  your stokvel members:  │
+│                         │
+│  ┌─────────────────────┐│
+│  │ stokvelmanager.app/  ││
+│  │ join/abc123    [📋]  ││
+│  └─────────────────────┘│
+│                         │
+│  ┌──────────┐           │
+│  │ [QR Code]│           │
+│  │          │           │
+│  └──────────┘           │
+│                         │
+│  [Share via WhatsApp]   │
+│                         │
+│  ── or add manually ──  │
+│                         │
+│  Phone number           │
+│  ┌───┬────────────┬───┐ │
+│  │+27│ 82 123 4567│[+]│ │
+│  └───┴────────────┴───┘ │
+│                         │
+│  [   Create Stokvel   ] │
+└─────────────────────────┘
+```
+
+---
+
+### 6.11 Money Tab — Contributions & Payouts Overview
+```
+┌─────────────────────────┐
+│  Money             [🔔] │
+│─────────────────────────│
+│                         │
+│  [Contributions][Payouts]│
+│─────────────────────────│
+│                         │
+│  Contributions tab:     │
+│  ┌─────────────────────┐│
+│  │ Umoja Savings       ││
+│  │ R500 due 28 Feb     ││
+│  │ Status: ⏳ Pending   ││
+│  │ [Mark as Paid]      ││
+│  └─────────────────────┘│
+│                         │
+│  ┌─────────────────────┐│
+│  │ Kasi Burial Society ││
+│  │ R200 due 28 Feb     ││
+│  │ Status: ✅ Paid     ││
+│  └─────────────────────┘│
+│                         │
+│  History                │
+│  ├ Jan — R700 (2 groups)│
+│  ├ Dec — R700 (2 groups)│
+│  └ Nov — R700 (2 groups)│
+│                         │
+│─────────────────────────│
+│  🏠      👥     💰    👤│
+└─────────────────────────┘
+```
+
+- **Contributions sub-tab:** All upcoming contributions across all groups
+- **Payouts sub-tab:** Upcoming payouts the user will receive + past payouts
+- Tapping any item navigates to that group's detail
+
+---
+
+### 6.12 Record Contribution Screen (Treasurer only)
+```
+┌─────────────────────────┐
+│  ← Record Payment       │
+│─────────────────────────│
+│                         │
+│  Member                 │
+│  ┌─────────────────────┐│
+│  │ Thabo Molefe     ▼  ││
+│  └─────────────────────┘│
+│                         │
+│  Amount                 │
+│  ┌──┬──────────────────┐│
+│  │R │ 500              ││
+│  └──┴──────────────────┘│
+│  [Pre-filled from group]│
+│                         │
+│  Payment Date           │
+│  ┌─────────────────────┐│
+│  │ 25 Feb 2026      📅 ││
+│  └─────────────────────┘│
+│                         │
+│  Proof of Payment       │
+│  ┌─────────────────────┐│
+│  │                     ││
+│  │   [📷 Take Photo]   ││
+│  │   [📁 Upload File]  ││
+│  │                     ││
+│  └─────────────────────┘│
+│                         │
+│  Notes (optional)       │
+│  ┌─────────────────────┐│
+│  │ Cash at meeting     ││
+│  └─────────────────────┘│
+│                         │
+│  [  Record Payment    ] │
+└─────────────────────────┘
+```
+
+- **Member dropdown** shows all group members
+- **Amount** pre-filled from group settings, editable
+- **Proof** — camera capture or gallery upload, stored in Firebase Storage
+- **On save:** updates Firestore → triggers WhatsApp bot notification to group → updates dashboard
+- **Receipt:** auto-generates a PDF receipt (downloadable/shareable)
+
+---
+
+### 6.13 Schedule Meeting Screen
+```
+┌─────────────────────────┐
+│  ← Schedule Meeting     │
+│─────────────────────────│
+│                         │
+│  Meeting Title          │
+│  ┌─────────────────────┐│
+│  │ March Monthly Meeting│
+│  └─────────────────────┘│
+│                         │
+│  Date & Time            │
+│  ┌────────────┬────────┐│
+│  │ 1 Mar 2026 │ 10:00  ││
+│  └────────────┴────────┘│
+│                         │
+│  Location               │
+│  ● In Person            │
+│  ┌─────────────────────┐│
+│  │ Mam' Nkosi's house  ││
+│  │ 📍 Tap to set pin   ││
+│  └─────────────────────┘│
+│  ○ Virtual              │
+│                         │
+│  Agenda                 │
+│  ┌─────────────────────┐│
+│  │ 1. February finances ││
+│  │ 2. New member vote  ││
+│  │ 3. Year-end plans   ││
+│  └─────────────────────┘│
+│                         │
+│  [Send via WhatsApp ✓]  │
+│                         │
+│  [ Schedule Meeting   ] │
+└─────────────────────────┘
+```
+
+- **Location toggle** between in-person (with map pin) and virtual (with meeting link)
+- **"Send via WhatsApp"** checkbox — posts meeting details to the linked WhatsApp group
+- **On save:** creates meeting in Firestore, sends FCM push, optionally sends WhatsApp message
+
+---
+
+### 6.14 Notifications Screen
+```
+┌─────────────────────────┐
+│  ← Notifications        │
+│─────────────────────────│
+│                         │
+│  Today                  │
+│  ┌─────────────────────┐│
+│  │● Nomsa paid R500    ││
+│  │  Umoja Savings · 2h ││
+│  └─────────────────────┘│
+│  ┌─────────────────────┐│
+│  │● Meeting scheduled  ││
+│  │  Kasi Burial · 5h   ││
+│  └─────────────────────┘│
+│                         │
+│  Yesterday              │
+│  ┌─────────────────────┐│
+│  │○ Contribution due   ││
+│  │  R500 · Umoja · 1d  ││
+│  └─────────────────────┘│
+│  ┌─────────────────────┐│
+│  │○ Sipho paid R500    ││
+│  │  Umoja Savings · 1d ││
+│  └─────────────────────┘│
+│                         │
+└─────────────────────────┘
+```
+
+- **● unread** / **○ read** indicators
+- Grouped by day
+- Tap → navigates to relevant screen (contribution, meeting, etc.)
+- Swipe to dismiss
+
+---
+
+### 6.15 Profile Screen
+```
+┌─────────────────────────┐
+│  ← Profile              │
+│─────────────────────────│
+│                         │
+│      [Avatar circle]    │
+│      Thabo Molefe       │
+│      +27 82 123 4567    │
+│      [Edit Profile]     │
+│                         │
+│  ── Settings ──         │
+│                         │
+│  Language          [EN▼]│
+│  Dark Mode         [  ]│
+│  Notifications     [✓] │
+│  WhatsApp Alerts   [✓] │
+│                         │
+│  ── About ──            │
+│                         │
+│  Terms of Service    → │
+│  Privacy Policy      → │
+│  Help & Support      → │
+│  Rate the App        → │
+│                         │
+│  ── Account ──          │
+│                         │
+│  [   Log Out          ] │
+│  [   Delete Account   ] │
+│                         │
+│  v1.0.0                 │
+│                         │
+└─────────────────────────┘
+```
+
+---
+
+## 7. User Flows
+
+### Flow 1: New User Joins Existing Stokvel
+```
+WhatsApp invite link → App Store/Play Store → Install → Splash → Onboarding (3 pages)
+→ Phone Auth (+27) → OTP → Profile Setup → Home (empty dashboard)
+→ Tap invite link again → Join confirmation → Group appears in My Groups
+→ Dashboard populates with group data
+```
+
+### Flow 2: Chairperson Creates New Stokvel
+```
+Home → Groups tab → (+) Create → Step 1 (name, type) → Step 2 (contribution, frequency)
+→ Step 3 (constitution) → Step 4 (invite link/QR) → Share via WhatsApp
+→ Group created → Add WhatsApp bot to group → Bot introduces itself
+→ Members join via link → Group populates
+```
+
+### Flow 3: Treasurer Records Monthly Contributions
+```
+Groups → Select group → Contributions tab → [+ Record Payment]
+→ Select member → Confirm amount → Upload proof (photo of cash/EFT) → Save
+→ Firestore updated → WhatsApp bot posts "✅ Thabo paid R500"
+→ Push notification to all members → Dashboard updated
+```
+
+### Flow 4: Monthly Rotation Payout
+```
+Cloud Function triggers on payout date → Identifies next recipient
+→ Push notification: "It's Thabo's turn for the R6,000 payout"
+→ WhatsApp bot posts in group
+→ Chairperson confirms payout in app → Status: Paid
+→ WhatsApp bot: "💰 R6,000 payout sent to Thabo"
+```
+
+### Flow 5: WhatsApp-Only Member Checks Balance
+```
+Member types "balance" in WhatsApp group
+→ Meta webhook → Cloud Function receives message
+→ Queries Firestore for group data
+→ Bot replies: "Umoja Savings | Balance: R48,000 | 8/12 paid for Feb | Your status: ✅ Paid"
+```
+
+### Flow 6: Meeting Flow
+```
+Chair → Group Detail → Meetings → [Schedule Meeting]
+→ Fill title, date, location, agenda → Save
+→ Firestore created → WhatsApp bot: "📅 Meeting: Sat 1 Mar, 10:00 at Mam' Nkosi's"
+→ Members reply YES/NO in WhatsApp → Bot updates RSVPs
+→ App shows RSVP count → Meeting happens → Chair records minutes in app
+```
+
+---
+
+## 8. Development Roadmap
+
+### Sprint 0 — Foundation (Week 1-2) [SKY-47]
 - [ ] Flutter project scaffold with clean architecture
-- [ ] Supabase project setup (auth, database, storage, edge functions)
-- [ ] CI/CD pipeline (GitHub Actions + Codemagic)
-- [ ] Design system: colours, typography, components (SA-inspired, warm, trustworthy)
-- [ ] Repo: `skynergroup/stokvel-manager`
+- [ ] Firebase project setup (Auth, Firestore, Storage, Functions, FCM)
+- [ ] Design system (colors, typography, component themes)
+- [ ] Routing with go_router
+- [ ] All placeholder screens with real UI
+- [ ] Shared widgets + models
+- [ ] CI/CD pipeline
 
-### Sprint 1 — Auth & Groups (Week 3-4)
-- [ ] Phone OTP authentication
-- [ ] Create stokvel group flow
-- [ ] Invite members (WhatsApp share + QR)
-- [ ] Group settings & roles
-- [ ] Member list with status
+### Sprint 1 — Auth & Groups (Week 3-4) [SKY-48]
+- [ ] Phone OTP authentication (Firebase Auth)
+- [ ] Profile setup flow
+- [ ] Create stokvel group (4-step flow)
+- [ ] Invite members (WhatsApp share + QR code)
+- [ ] Group detail with tabs
+- [ ] Member management (roles, order)
 
-### Sprint 2 — Contributions (Week 5-6)
-- [ ] Define contribution schedule
-- [ ] Record payment + proof upload
-- [ ] Contribution dashboard (who paid, who owes)
-- [ ] Automated reminder notifications (push)
-- [ ] Receipt generation
+### Sprint 2 — Contributions & Money (Week 5-6) [SKY-49]
+- [ ] Contribution schedule engine
+- [ ] Record payment + proof upload (Firebase Storage)
+- [ ] Contribution dashboard per group
+- [ ] Money tab (cross-group view)
+- [ ] Push notifications (FCM) for due dates
+- [ ] Receipt PDF generation
 
-### Sprint 3 — Payouts & Meetings (Week 7-8)
-- [ ] Rotational payout calculator
+### Sprint 3 — Payouts & Meetings (Week 7-8) [SKY-50]
+- [ ] Rotation payout calculator
 - [ ] Payout request & approval flow
 - [ ] Meeting scheduler with RSVP
-- [ ] Location sharing
+- [ ] Location map integration
 - [ ] Minutes recording
+- [ ] Cloud Functions for automated reminders
 
-### Sprint 4 — Polish & Launch (Week 9-10)
-- [ ] Reporting & PDF exports
-- [ ] WhatsApp Business API integration
+### Sprint 4 — WhatsApp Bot & Launch (Week 9-10) [SKY-51]
+- [ ] WhatsApp Business Cloud API integration
+- [ ] Cloud Functions webhook handlers
+- [ ] Bot commands (pay, balance, next payout, next meeting)
+- [ ] Automated notifications (reminders, confirmations, summaries)
 - [ ] Multilingual support (EN, isiZulu)
-- [ ] Onboarding flow
-- [ ] App Store & Play Store submission
+- [ ] App Store + Play Store submission
 - [ ] Landing page
 
 ---
 
-## 10. Risk Register
+## 9. Monetization Model
 
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|------------|
-| Low adoption — stokvels prefer WhatsApp | High | Medium | WhatsApp-first strategy; bot that works inside existing groups |
-| Trust — users won't put financial data in unknown app | High | High | NASASA endorsement, transparent security, open audit trails |
-| Regulatory — FSCA flags us as unlicensed FSP | Medium | Low (MVP tracks only) | No money movement in Phase 1; partner with licensed providers later |
-| StokFella has first-mover advantage | Medium | Low | They're stagnant (2021 iOS update). We move faster. |
-| Data costs — SA users are data-conscious | Medium | Medium | Offline-first architecture; USSD fallback in Phase 2 |
-| Fraud — fake groups or contribution disputes | Medium | Medium | Proof of payment uploads, admin approval, dispute resolution flow |
+### Free Tier (Forever)
+- Up to 15 members per group
+- 3 groups max
+- Contribution tracking + payouts
+- WhatsApp bot (basic commands)
+- Meeting scheduler
 
----
-
-## 11. Team & Resources
-
-### Minimum Viable Team
-- **1 Flutter dev** (us — Astra builds)
-- **1 Designer** (can contract; or we use existing design skills + Figma)
-- **1 Domain expert** (stokvel chairperson as advisor — find one)
-
-### Infrastructure Costs (Monthly)
-| Item | Cost |
-|------|------|
-| Supabase Pro | $25 |
-| WhatsApp Business API | ~$50 (1000 conversations) |
-| Firebase (FCM) | Free |
-| Codemagic (iOS builds) | $0-49 |
-| Domain + hosting (landing page) | $10 |
-| **Total** | **~$85-135/month** |
+### Premium — R49/month per group
+- Unlimited members
+- Unlimited groups
+- Advanced analytics + charts
+- PDF reports + receipts
+- Priority WhatsApp notifications
+- Constitution templates
+- Voting & polling
 
 ---
 
-## 12. Success Criteria
-
-**StokvelManager succeeds if:**
-1. A stokvel chairperson can set up their group and track first contributions within 5 minutes
-2. Every member can see exactly how much has been collected and who owes what
-3. Not a single rand goes unaccounted for
-4. Groups that adopt it never go back to paper
+## 10. Regulatory Notes
+- **Phase 1: Track only** — no money movement = no FSP license needed
+- **POPIA compliance** — privacy policy, consent flows, data deletion
+- **NASASA partnership** opportunity — they regulate 125K groups
+- **Phase 2 payments:** partner with licensed providers (Ozow, PayFast)
 
 ---
 
 *Created: 2026-02-26*
-*Status: Planning*
-*Repo: TBD → skynergroup/stokvel-manager*
+*Updated: 2026-02-26 (v2 — Firebase, WhatsApp bot, detailed screens)*
+*Status: In Progress — SKY-47*
+*Repo: skynergroup/stokvel-manager*

@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isMember(stokvelId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/stokvels/$(stokvelId)/members/$(request.auth.uid));
+    }
+
+    function getMemberRole(stokvelId) {
+      return get(/databases/$(database)/documents/stokvels/$(stokvelId)/members/$(request.auth.uid)).data.role;
+    }
+
+    function isChairperson(stokvelId) {
+      return isMember(stokvelId) && getMemberRole(stokvelId) == 'chairperson';
+    }
+
+    function isTreasurerOrChair(stokvelId) {
+      return isMember(stokvelId) &&
+        (getMemberRole(stokvelId) == 'treasurer' || getMemberRole(stokvelId) == 'chairperson');
+    }
+
+    function isOfficer(stokvelId) {
+      return isMember(stokvelId) &&
+        (getMemberRole(stokvelId) == 'chairperson' ||
+         getMemberRole(stokvelId) == 'treasurer' ||
+         getMemberRole(stokvelId) == 'secretary');
+    }
+
+    // Users can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Notifications — user can only read/write their own
+    match /notifications/{notificationId} {
+      allow read, write: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+    }
+
+    // Stokvel — only members can read
+    match /stokvels/{stokvelId} {
+      allow read: if isMember(stokvelId);
+      allow create: if isAuthenticated();
+      allow update: if isChairperson(stokvelId);
+
+      // Members subcollection
+      match /members/{memberId} {
+        allow read: if isMember(stokvelId);
+        allow write: if isChairperson(stokvelId);
+      }
+
+      // Contributions — members read, treasurer/chair write
+      match /contributions/{contribId} {
+        allow read: if isMember(stokvelId);
+        allow create, update: if isTreasurerOrChair(stokvelId);
+      }
+
+      // Payouts — members read, chair manages
+      match /payouts/{payoutId} {
+        allow read: if isMember(stokvelId);
+        allow write: if isChairperson(stokvelId);
+      }
+
+      // Meetings — members read, any officer writes
+      match /meetings/{meetingId} {
+        allow read: if isMember(stokvelId);
+        allow write: if isOfficer(stokvelId);
+      }
+    }
+  }
+}
