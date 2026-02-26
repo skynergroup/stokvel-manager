@@ -138,6 +138,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await verifyPhoneNumber(state.phoneNumber!);
   }
 
+  Future<void> signInWithGoogle() async {
+    state = state.copyWith(status: AuthStatus.loading, error: null);
+    try {
+      await _authService.signInWithGoogle();
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: e.code == 'sign-in-cancelled'
+            ? null
+            : _mapAuthError(e.code),
+      );
+      if (e.code == 'sign-in-cancelled') {
+        state = state.copyWith(status: AuthStatus.initial);
+      }
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: 'Google sign-in failed. Please try again.',
+      );
+    }
+  }
+
   Future<void> signOut() async {
     await _authService.signOut();
     state = const AuthState();

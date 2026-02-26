@@ -53,6 +53,10 @@ class _PhoneAuthScreenState extends ConsumerState<PhoneAuthScreen> {
       if (next.status == AuthStatus.codeSent) {
         context.goNamed(RouteNames.otp);
       }
+      if (next.status == AuthStatus.verified) {
+        // Google SSO or auto-verify — router redirect handles navigation
+        return;
+      }
       if (next.status == AuthStatus.error && next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -139,6 +143,45 @@ class _PhoneAuthScreenState extends ConsumerState<PhoneAuthScreen> {
                   label: 'Continue',
                   onPressed: isLoading ? null : _continue,
                   isLoading: isLoading,
+                ),
+                const Gap(24),
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'or',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const Gap(24),
+                OutlinedButton.icon(
+                  onPressed: isLoading
+                      ? null
+                      : () => ref
+                          .read(authStateProvider.notifier)
+                          .signInWithGoogle(),
+                  icon: Image.network(
+                    'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                    height: 20,
+                    width: 20,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.g_mobiledata,
+                      size: 24,
+                    ),
+                  ),
+                  label: const Text('Continue with Google'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    side: BorderSide(color: AppColors.divider),
+                  ),
                 ),
                 const Spacer(),
                 Center(
