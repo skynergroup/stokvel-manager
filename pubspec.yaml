@@ -1,7 +1,7 @@
 name: stokvel_manager
 description: "Digitize contributions, payouts, and meeting scheduling for South Africa's stokvel economy."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.11.0
