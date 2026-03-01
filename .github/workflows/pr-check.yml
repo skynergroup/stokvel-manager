@@ -19,7 +19,7 @@ env:
 jobs:
   analyze:
     name: Analyze & Test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, astra]
     steps:
       - uses: actions/checkout@v4
 
@@ -53,7 +53,7 @@ jobs:
 
   build:
     name: Build Debug APK
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, astra]
     steps:
       - uses: actions/checkout@v4
 
@@ -100,7 +100,7 @@ jobs:
 
   integration-test:
     name: Integration Tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, astra]
     needs: [analyze]
     steps:
       - uses: actions/checkout@v4
