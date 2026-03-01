@@ -158,7 +158,7 @@ class _RecordContributionScreenState
                         .where((m) => m.status == MemberStatus.active)
                         .toList();
                     return DropdownButtonFormField<StokvelMember>(
-                      value: _selectedMember,
+                      initialValue: _selectedMember,
                       decoration: const InputDecoration(),
                       hint: const Text('Select member'),
                       items: activeMembers
