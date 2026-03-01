@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _googleInitialized = false;
 
   User? get currentUser => _auth.currentUser;
 
@@ -45,38 +45,31 @@ class AuthService {
     );
   }
 
-  // ── Google Sign-In (v7 API) ─────────────────────────────────
+  // ── Google Sign-In ──────────────────────────────────────────
 
-  Future<void> _ensureGoogleInitialized() async {
-    if (_googleInitialized) return;
-    await GoogleSignIn.instance.initialize();
-    _googleInitialized = true;
-  }
-
-  /// Google Sign-In: triggers authenticate → listens for sign-in event → Firebase credential
   Future<UserCredential> signInWithGoogle() async {
-    await _ensureGoogleInitialized();
+    if (kIsWeb) {
+      // On web, use Firebase Auth's signInWithPopup directly.
+      // No separate OAuth client setup needed — Firebase handles it.
+      final provider = GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+      return _auth.signInWithPopup(provider);
+    }
 
-    final googleSignIn = GoogleSignIn.instance;
+    // Mobile: use google_sign_in package
+    await GoogleSignIn.instance.initialize();
     final completer = Completer<UserCredential>();
 
     late StreamSubscription<GoogleSignInAuthenticationEvent> sub;
-    sub = googleSignIn.authenticationEvents.listen((event) async {
+    sub = GoogleSignIn.instance.authenticationEvents.listen((event) async {
       try {
         switch (event) {
           case GoogleSignInAuthenticationEventSignIn(:final user):
-            // v7: idToken comes from user.authentication
             final idToken = user.authentication.idToken;
-
-            final credential = GoogleAuthProvider.credential(
-              idToken: idToken,
-            );
-
-            final userCredential =
-                await _auth.signInWithCredential(credential);
-            if (!completer.isCompleted) {
-              completer.complete(userCredential);
-            }
+            final credential = GoogleAuthProvider.credential(idToken: idToken);
+            final userCredential = await _auth.signInWithCredential(credential);
+            if (!completer.isCompleted) completer.complete(userCredential);
           case GoogleSignInAuthenticationEventSignOut():
             if (!completer.isCompleted) {
               completer.completeError(
@@ -88,27 +81,20 @@ class AuthService {
             }
         }
       } catch (e) {
-        if (!completer.isCompleted) {
-          completer.completeError(e);
-        }
+        if (!completer.isCompleted) completer.completeError(e);
       } finally {
         sub.cancel();
       }
     }, onError: (Object e) {
-      if (!completer.isCompleted) {
-        completer.completeError(e);
-      }
+      if (!completer.isCompleted) completer.completeError(e);
       sub.cancel();
     });
 
-    // Trigger the authentication UI
     try {
-      await googleSignIn.authenticate();
+      await GoogleSignIn.instance.authenticate();
     } catch (e) {
       sub.cancel();
-      if (!completer.isCompleted) {
-        completer.completeError(e);
-      }
+      if (!completer.isCompleted) completer.completeError(e);
     }
 
     return completer.future.timeout(
@@ -126,11 +112,11 @@ class AuthService {
   // ── Sign Out ────────────────────────────────────────────────
 
   Future<void> signOut() async {
-    try {
-      if (_googleInitialized) {
+    if (!kIsWeb) {
+      try {
         await GoogleSignIn.instance.disconnect();
-      }
-    } catch (_) {}
+      } catch (_) {}
+    }
     await _auth.signOut();
   }
 }
