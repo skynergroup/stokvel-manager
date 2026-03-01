@@ -313,7 +313,7 @@ class _MeetingDetailScreenState extends ConsumerState<MeetingDetailScreen> {
                                     meetingId: widget.meetingId,
                                     minutes: _minutesController.text,
                                   );
-                              if (mounted) {
+                              if (context.mounted) {
                                 setState(() => _editingMinutes = false);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
