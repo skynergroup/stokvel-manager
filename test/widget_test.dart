@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stokvel_manager/main.dart';
 
 void main() {
   testWidgets('App starts without crashing', (WidgetTester tester) async {

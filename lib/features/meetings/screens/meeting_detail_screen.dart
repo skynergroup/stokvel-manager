@@ -315,6 +315,7 @@ class _MeetingDetailScreenState extends ConsumerState<MeetingDetailScreen> {
                                   );
                               if (mounted) {
                                 setState(() => _editingMinutes = false);
+                                // ignore: use_build_context_synchronously
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text('Minutes saved')),

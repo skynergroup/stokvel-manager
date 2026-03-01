@@ -179,7 +179,7 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                   ),
                   const Gap(8),
                   DropdownButtonFormField<StokvelType>(
-                    value: _selectedType,
+                    initialValue: _selectedType,
                     decoration: const InputDecoration(),
                     items: StokvelType.values
                         .map((t) => DropdownMenuItem(

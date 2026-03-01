@@ -160,29 +160,27 @@ class _ScheduleMeetingScreenState
                 Text('Location',
                     style: Theme.of(context).textTheme.labelLarge),
                 const Gap(8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: RadioListTile<bool>(
-                        title: const Text('In Person'),
-                        value: true,
-                        groupValue: _isInPerson,
-                        onChanged: (v) =>
-                            setState(() => _isInPerson = v ?? true),
-                        contentPadding: EdgeInsets.zero,
+                RadioGroup<bool>(
+                  groupValue: _isInPerson,
+                  onChanged: (v) => setState(() => _isInPerson = v ?? _isInPerson),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<bool>(
+                          title: const Text('In Person'),
+                          value: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: RadioListTile<bool>(
-                        title: const Text('Virtual'),
-                        value: false,
-                        groupValue: _isInPerson,
-                        onChanged: (v) =>
-                            setState(() => _isInPerson = v ?? false),
-                        contentPadding: EdgeInsets.zero,
+                      Expanded(
+                        child: RadioListTile<bool>(
+                          title: const Text('Virtual'),
+                          value: false,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const Gap(8),
                 if (_isInPerson)
