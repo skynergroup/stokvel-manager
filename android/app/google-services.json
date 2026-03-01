@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "612024885391",
+    "project_id": "astra-488209",
+    "storage_bucket": "astra-488209.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:612024885391:android:2117f4a0a01ec0597790fa",
+        "android_client_info": {
+          "package_name": "com.skynergroup.stokvelmanager.stokvel_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZxp6dr-a_0tSufbF5C2egEki03iQhBrU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
